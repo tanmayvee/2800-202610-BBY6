@@ -1,2 +1,12 @@
-# 2800-202510-BBY6
-COMP 2800 Projects group BBY6 Repository
+## About Us
+
+Team Name: BBY-06
+
+Team Members:
+
+- Julia Ziebart
+- Mayvee Tan
+- Quinn Callander
+- Vicente Goncalves
+- Brihad Sidda
+- Ivan Somera
