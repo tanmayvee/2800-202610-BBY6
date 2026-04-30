@@ -1,2 +1,4 @@
-# 2800-202510-BBY6
-COMP 2800 Projects group BBY6 Repository
+This is my readme file. 
+To run the website:
+1. Download the files.
+2. Open index.html in your browser.
