@@ -120,6 +120,12 @@ app.get('/location/:id', async (req, res) => {
   }
 });
 
+// SETTINGS PAGE
+// Renders views/settings.ejs
+app.get('/settings', (req, res) => {
+  res.render('settings');
+});
+
 // Health check
 app.get('/api', (req, res) => {
   res.json({ message: 'Urban Shade API is running' });
