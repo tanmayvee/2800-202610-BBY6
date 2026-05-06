@@ -10,6 +10,8 @@ const crowdRouter = require('./routes/crowd');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('view engine', 'ejs');
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -22,7 +24,8 @@ app.use('/api/crowd', crowdRouter);
 
 // Health check route
 app.get('/', (req, res) => {
-  res.json({ message: 'Urban Shade API is running' });
+  //res.json({ message: 'Urban Shade API is running' });
+  res.render('homepage');
 });
 
 app.listen(PORT, () => {
