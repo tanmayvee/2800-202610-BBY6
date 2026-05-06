@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CoolSpot</title>
+    <link href="src/styles/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="flex flex-col h-screen w-full relative">
+      <!-- Map -->
+      <main class="h-full w-full">
+        <div id="map" class="h-full w-full"></div>
+      </main>
+
+      <!-- Floating temp/uv -->
+      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000]">
+        <div
+          class="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-xl border border-gray-200 text-center"
+        >
+          <span
+            class="text-xs font-bold tracking-wider text-gray-500 block mb-1"
+            >Current Temp</span
+          >
+          <p id="temp" class="text-2xl font-bold">--°C</p>
+          <p id="uv" class="text-sm font-medium text-gray-700">UV: --</p>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/map.js"></script>
+  </body>
+</html>
