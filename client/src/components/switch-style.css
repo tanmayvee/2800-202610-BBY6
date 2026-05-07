@@ -1,0 +1,21 @@
+/* CSS for i-switches */
+/* This file shouldnt be changed unless core changes to the switch are made */
+i-switch {
+  display: flex;
+  border-radius: 100px;
+  width: 100px;
+  height: 40px;
+  overflow: hidden;
+  background-color: #00a9f5;
+  transition: filter 200ms ease-in-out;
+}
+i-switch[value="false"] {
+  filter: grayscale(1);
+}
+
+i-switch .switch-inner {
+  position: relative;
+  border-radius: 100px;
+  background-color: #fff;
+  transition: transform 200ms ease-in-out;
+}
