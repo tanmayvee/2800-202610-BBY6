@@ -4,6 +4,25 @@ import "maplibre-gl/dist/maplibre-gl.css";
 const VANCOUVER_LAT = 49.2827;
 const VANCOUVER_LNG = -123.1207;
 
+let isClicked = false;
+
+const drawer = document.getElementById("drawer");
+const drawerTitle = document.getElementById("drawer-title");
+const drawerContent = document.getElementById("drawer-content");
+
+function openDrawer(title, content) {
+  drawer.classList.remove("open");
+  setTimeout(() => {
+    drawerTitle.textContent = title;
+    drawerContent.innerHTML = content;
+    drawer.classList.add("open");
+  }, 300);
+}
+
+function closeDrawer() {
+  drawer.classList.remove("open");
+}
+
 // ------------------------------------------------------------
 // Global app state
 // ------------------------------------------------------------
@@ -28,6 +47,18 @@ function showMap() {
     await addParksLayer(map);
     await addCommunityCentresLayer(map);
     updateMapUv(VANCOUVER_LAT, VANCOUVER_LNG, map);
+
+    // Clicking outside of drawer or clicking a marker/shaded area closes it
+    map.on("click", (e) => {
+      if (!isClicked) {
+        closeDrawer();
+      }
+      isClicked = false;
+    });
+
+    // Close button
+    const drawerClose = document.getElementById("drawer-close");
+    drawerClose.addEventListener("click", closeDrawer);
 
     const geolocate = addGeolocationControl(map);
 
@@ -97,14 +128,15 @@ async function addParksLayer(map) {
       },
     });
 
-    // Popup on click
+    // Show drawer on click
     map.on("click", "parks-fill", (e) => {
+      isClicked = true;
       const props = e.features[0].properties;
       console.log(props);
-      new maplibregl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(`<strong>${props.park_name}</strong>`)
-        .addTo(map);
+      openDrawer(
+        props.park_name,
+        `<a href=${props.park_url} target="_blank" class="underline">Visit website<a/>`,
+      );
     });
 
     // Pointer cursor on hover
@@ -145,14 +177,20 @@ async function addCommunityCentresLayer(map) {
       },
     });
 
-    // Popup on click
+    // Show drawer on click
     map.on("click", "community-centres-circle", (e) => {
+      isClicked = true;
       const props = e.features[0].properties;
-      console.log(props); // check field names
-      new maplibregl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(`<strong>${props.name}</strong>`)
-        .addTo(map);
+      console.log(props);
+      openDrawer(
+        props.name,
+        `
+        <ul>
+            <li>${props.address}</li>
+            <li><a href=${props.urllink} target="_blank" class="underline">Visit website<a/></li>
+        </ul>
+        `,
+      );
     });
 
     map.on("mouseenter", "community-centres-circle", () => {
@@ -205,7 +243,10 @@ async function updateMapUv(lat, lng, map) {
     console.log("Data from my server:", data);
 
     const uvEl = document.getElementById("uv");
-    if (uvEl) uvEl.textContent = `UV: ${data.uvIndex} (${data.riskLevel})`;
+    if (uvEl) {
+      const roundedUv = Math.round(data.uvIndex);
+      uvEl.textContent = `UV: ${roundedUv} (${data.riskLevel})`;
+    }
 
     document.getElementById("temp").textContent = `${data.temperature}°C`;
 
