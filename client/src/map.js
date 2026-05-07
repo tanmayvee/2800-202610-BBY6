@@ -131,7 +131,7 @@ async function addCommunityCentresLayer(map) {
       data: geojson,
     });
 
-    const image = await map.loadImage("/snowflake.png");
+    const image = await map.loadImage("images/map-loc_cooling.png");
     map.addImage("snowflake", image.data);
 
     // Circle marker for each community centre
@@ -141,7 +141,7 @@ async function addCommunityCentresLayer(map) {
       source: "vancouver-community-centres",
       layout: {
         "icon-image": "snowflake",
-        "icon-size": 0.05,
+        "icon-size": 0.25,
       },
     });
 
