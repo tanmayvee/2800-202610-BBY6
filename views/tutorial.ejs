@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<style>
+  * {
+    position: absolute;
+    background-color: grey;
+  }
+  popup {
+    color: white;
+  }
+</style>
+<%- if(showTutorial) { %>
+<div class="popup">
+  This is a popup.
+  <button onclick="showTutorial = false">close popup</button>
+</div>
+<% } %>
