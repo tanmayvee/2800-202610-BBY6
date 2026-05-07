@@ -123,9 +123,7 @@ async function addParksLayer(map) {
 
 async function addCommunityCentresLayer(map) {
   try {
-    const res = await fetch(
-      "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/community-centres/exports/geojson",
-    );
+    const res = await fetch("/api/cooling-centres");
     const geojson = await res.json();
 
     map.addSource("vancouver-community-centres", {
