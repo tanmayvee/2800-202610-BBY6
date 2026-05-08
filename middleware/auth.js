@@ -1,74 +1,40 @@
-const express = require('express');
-const router = express.Router();
-const supabase = require('../db/supabase');
-
-// POST /api/auth/signup
-// Body: { email, password }
-router.post('/signup', async (req, res) => {
+const supabase = require("../db/supabase");
+ 
+// Middleware to protect routes that require authentication
+// Checks for a valid Supabase session token in the Authorization header
+// Usage: add requireAuth as a parameter to any route you want to protect
+//
+// Example:
+//   router.post("/", requireAuth, async (req, res) => { ... })
+//
+// In the protected route, access the logged in user with req.user
+//   req.user.id, req.user.email, etc.
+ 
+const requireAuth = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+    const authHeader = req.headers.authorization;
+ 
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized. Please log in." });
     }
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) throw error;
-
-    res.status(201).json({
-      message: 'Signup successful. Please check your email to confirm your account.',
-      user: data.user,
-    });
-  } catch (error) {
-    console.error('Signup error:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// POST /api/auth/login
-// Body: { email, password }
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+ 
+    const token = authHeader.split(" ")[1];
+ 
+    // Verify the token with Supabase
+    const { data, error } = await supabase.auth.getUser(token);
+ 
+    if (error || !data.user) {
+      return res.status(401).json({ error: "Invalid or expired session. Please log in again." });
     }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) throw error;
-
-    res.json({
-      message: 'Login successful',
-      user: data.user,
-      session: data.session,
-    });
+ 
+    // Attach the user to the request so routes can access it
+    req.user = data.user;
+    next();
   } catch (error) {
-    console.error('Login error:', error.message);
-    res.status(500).json({ error: error.message });
+    console.error("Auth middleware error:", error.message);
+    res.status(500).json({ error: "Authentication error" });
   }
-});
-
-// POST /api/auth/logout
-router.post('/logout', async (req, res) => {
-  try {
-    const { error } = await supabase.auth.signOut();
-
-    if (error) throw error;
-
-    res.json({ message: 'Logged out successfully' });
-  } catch (error) {
-    console.error('Logout error:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-module.exports = router;
+};
+ 
+module.exports = requireAuth;
+ 
