@@ -18,8 +18,6 @@ class VInput extends HTMLElement {
       const attr = this.attributes.item(i);
       this._input.setAttribute(attr.name, attr.value);
     }
-
-    window.test = this;
   }
 
   /**

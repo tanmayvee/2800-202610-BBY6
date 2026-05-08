@@ -1,6 +1,3 @@
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
-
 const VANCOUVER_LAT = 49.2827;
 const VANCOUVER_LNG = -123.1207;
 
@@ -36,7 +33,7 @@ const appState = {
 function showMap() {
   const map = new maplibregl.Map({
     container: "map",
-    style: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${import.meta.env.VITE_MAPTILER_KEY}`,
+    style: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${window.MAPTILER_KEY}`,
     center: [VANCOUVER_LNG, VANCOUVER_LAT],
     zoom: 12,
   });
@@ -163,7 +160,7 @@ async function addCommunityCentresLayer(map) {
       data: geojson,
     });
 
-    const image = await map.loadImage("images/map-loc_cooling.png");
+    const image = await map.loadImage("img/map-loc_cooling.png");
     map.addImage("snowflake", image.data);
 
     // Circle marker for each community centre
