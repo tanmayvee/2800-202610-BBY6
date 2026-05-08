@@ -31,20 +31,18 @@ To run the website:
 
 ```
 /2800-202610-BBY6
-├── client/
-│ ├── public/
-│ ├── src/
-│ │ ├── map.js
-│ │ ├── main.js
-│ │ └── style.css
-│ └── index.html
 ├── db/
 │ └── supabase.js
+├──  public/
+│ ├── components/
+│ ├── img/
+│ ├── js/
+│ ├── styles/
 ├── routes/
-├── public/ ← Vite build output (auto-generated, do not edit)
-├── sample.env
-├── .env
+├── views/
+│ ├── templates/
 ├── package.json
-├── server.js
-└── vite.config.js
+├── README.md
+├── sample.env
+└── server.js
 ```
