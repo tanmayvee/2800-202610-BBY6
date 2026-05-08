@@ -26,7 +26,7 @@ app.use("/api/crowd", crowdRouter);
 // Health check route
 app.get("/", (req, res) => {
   //res.json({ message: 'Urban Shade API is running' });
-  res.render("homepage");
+  res.render("homepage", {showTutorial: true});
 });
 
 app.get("/login", (req, res) => {

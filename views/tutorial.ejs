@@ -1,16 +1,35 @@
-<!DOCTYPE html>
 <style>
-  * {
-    position: absolute;
-    background-color: grey;
+  .popup {
+    position: fixed;
+    background-color: aliceblue;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
   }
-  popup {
-    color: white;
+
+  .popupBackground {
+    background-color: black;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    z-index: 1;
+    opacity: 0.5;
   }
 </style>
-<%- if(showTutorial) { %>
+
+<% if(showTutorial) { %>
+<div class="popupBackground"></div>
 <div class="popup">
   This is a popup.
-  <button onclick="showTutorial = false">close popup</button>
-</div>
+  <button onclick="disablePopup()">close popup</button>
+  </div>
 <% } %>
+
+<script>
+  function disablePopup() {
+    document.querySelector(".popupBackground").style.display = 'none';
+    document.querySelector(".popup").style.display = 'none';
+    console.log("hello");
+  }
+</script>
