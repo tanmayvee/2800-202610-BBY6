@@ -37,8 +37,8 @@ function showMap() {
   const map = new maplibregl.Map({
     container: "map",
     style: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${import.meta.env.VITE_MAPTILER_KEY}`,
-    center: [-123.00163752324765, 49.25324576104826],
-    zoom: 10,
+    center: [VANCOUVER_LNG, VANCOUVER_LAT],
+    zoom: 12,
   });
 
   addControls(map);
