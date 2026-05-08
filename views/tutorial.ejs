@@ -5,7 +5,12 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    border-radius: 15px;
+    width: 25vw;
+    height: 25vh;
     z-index: 2;
+    text-align: center;
+    align-content: center;
   }
 
   .popupBackground {
@@ -21,7 +26,7 @@
 <% if(showTutorial) { %>
 <div class="popupBackground"></div>
 <div class="popup">
-  This is a popup.
+  This is a popup.<br/>
   <button onclick="disablePopup()">close popup</button>
   </div>
 <% } %>
