@@ -32,7 +32,8 @@ app.use("/api/crowd", crowdRouter);         // crowd busyness reports
 
 // HOME - passes maptilerKey so the map can load
 app.get("/", (req, res) => {
-  res.render("index", { maptilerKey: process.env.MAPTILER_KEY });
+  res.render("index", { maptilerKey: process.env.MAPTILER_KEY, 
+                        showTutorial: true /*hardcoded for now */});
 });
 
 app.get("/homepage", (req, res) => {
