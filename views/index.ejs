@@ -23,8 +23,7 @@
             <div id="drawer-title" class="text-xl font-bold"></div>
             <button
               id="drawer-close"
-              class="bg-gray-600 text-white px-3 py-1 rounded-md"
-            >
+              class="bg-gray-600 text-white px-3 py-1 rounded-md" onclick="closeDrawer()">
               ✕
             </button>
           </div>
@@ -60,7 +59,7 @@
       window.MAPTILER_KEY = "<%= maptilerKey %>";
     </script>
     <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
-    <script type="module" src="/js/main.js"></script>
-    <script type="module" src="/js/map.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/map.js"></script>
   </body>
 </html>
