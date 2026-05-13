@@ -35,9 +35,17 @@ app.use("/api/user-preferences", userPreferencesRouter); // user preferences for
 // Access server variables in EJS using <%= variableName %>
 
 // HOME - passes maptilerKey so the map can load
-app.get("/", (req, res) => {
-  res.render("index", { maptilerKey: process.env.MAPTILER_KEY, 
-                        showTutorial: true /*hardcoded for now */});
+app.get("/", async (req, res) => {
+  const supabase = require("./db/supabase");
+  let { data, error } = await supabase.from("user_preference")
+      .select("*")
+      .eq("uid", req.user.id)
+      .single();
+      
+  if(!error) {
+    res.render("index", { maptilerKey: process.env.MAPTILER_KEY, 
+                        showTutorial: data.show_tutorial /*hardcoded for now */});
+  }
 });
 
 app.get("/homepage", (req, res) => {
