@@ -16,6 +16,84 @@ function openDrawer(title, content) {
   }, 300);
 }
 
+function escapeHtml(text) {
+  if (text == null || text === undefined) {
+    return "";
+  }
+  const div = document.createElement("div");
+  div.textContent = String(text);
+  return div.innerHTML;
+}
+
+/**
+ * Fetch a map item by id and open the drawer (used by map clicks and search results).
+ * @param {string} mapItemId
+ */
+async function openDrawerForMapItem(mapItemId) {
+  try {
+    const res = await fetch(`/api/locations/${encodeURIComponent(mapItemId)}`);
+    if (!res.ok) {
+      console.warn("Location not found:", mapItemId);
+      return;
+    }
+    const loc = await res.json();
+
+    let title;
+    let content;
+
+    const parkName = loc.park_name != null ? String(loc.park_name).trim() : "";
+
+    if (parkName !== "") {
+      title = parkName;
+      const neighbourhoodLine = loc.neighbourhood_name
+        ? `<p class="mb-2">${escapeHtml(loc.neighbourhood_name)}</p>`
+        : "";
+      const hectaresLine =
+        loc.hectares != null ? `<p class="text-sm text-gray-600">${escapeHtml(String(loc.hectares))} ha</p>` : "";
+      const nbLink =
+        loc.neighbourhood_url
+          ? `<p class="mt-2"><a href="${escapeHtml(loc.neighbourhood_url)}" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Neighbourhood info</a></p>`
+          : "";
+      content = `${neighbourhoodLine}${hectaresLine}${nbLink}`;
+    } else if (loc.name != null && loc.address != null) {
+      title = loc.name;
+      content = `<ul class="list-disc pl-5 space-y-1">
+          <li>${escapeHtml(loc.address)}</li>
+          <li>${escapeHtml(loc.type)}</li>
+        </ul>`;
+    } else {
+      title = loc.name || loc.park_name || "Location";
+      content = `<p class="text-sm text-gray-600">Details for this location are limited.</p>`;
+    }
+
+    openDrawer(title, content);
+
+    const map = window.appMap;
+    if (!map) {
+      return;
+    }
+
+    const coordRes = await fetch(
+      `/api/cooling-centres/location/${encodeURIComponent(mapItemId)}`
+    );
+    if (!coordRes.ok) {
+      return;
+    }
+    const coords = await coordRes.json();
+    if (Array.isArray(coords) && coords.length > 0 && coords[0].long != null && coords[0].lat != null) {
+      map.flyTo({
+        center: [coords[0].long, coords[0].lat],
+        zoom: 14,
+        speed: 1.2,
+      });
+    }
+  } catch (err) {
+    console.error("openDrawerForMapItem:", err);
+  }
+}
+
+window.openDrawerForMapItem = openDrawerForMapItem;
+
 function closeDrawer() {
   drawer.classList.remove("open");
 }
@@ -38,6 +116,8 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
     center: center,
     zoom: zoom,
   });
+
+  window.appMap = map;
 
   addControls(map);
 

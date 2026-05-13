@@ -9,6 +9,7 @@ const crowdRouter = require("./routes/crowd");
 const authRouter = require("./routes/auth");
 const locationsRouter = require("./routes/locations");
 const userPreferencesRouter = require("./routes/userpreferences");
+const searchRouter = require("./routes/search");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,6 +30,7 @@ app.use("/api/cooling-centres", coolingRouter); // cooling centre locations
 app.use("/api/crowd", crowdRouter);         // crowd busyness reports
 app.use("/api/locations", locationsRouter); // all map items (parks and cooling centres)
 app.use("/api/user-preferences", userPreferencesRouter); // user preferences for notifications, etc.
+app.use("/api/search", searchRouter); // map search (cooling + parks)
 
 // Page Routes
 // These render EJS files from the views/ folder
