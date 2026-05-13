@@ -2,6 +2,7 @@ const VANCOUVER_LAT = 49.2827;
 const VANCOUVER_LNG = -123.1207;
 
 let isClicked = false;
+let isFilterClicked = false;
 
 const drawer = document.getElementById("drawer");
 const drawerTitle = document.getElementById("drawer-title");
@@ -55,7 +56,9 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
       if (!isClicked) {
         closeDrawer();
       }
+      document.getElementById("filter-drawer").classList.remove("open");
       isClicked = false;
+      isFilterClicked = false;
     });
 
     // Close button
@@ -87,6 +90,54 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
     geolocate.trigger();
 
     console.log("Map loaded!");
+
+    document.getElementById("filter-btn").addEventListener("click", () => {
+      isFilterClicked = true;
+      document.getElementById("filter-drawer").classList.toggle("open");
+    });
+
+    // ------------------------------------------------------------
+    // Filtering
+    // ------------------------------------------------------------
+
+    // ------------------------------------------------------------
+    // Filtering
+    // ------------------------------------------------------------
+
+    const navFilter = document.getElementById("nav-filter");
+    const clearBtn = document.getElementById("clear-filters");
+
+    function updateLayers() {
+      const showParks = document.getElementById("parks").checked;
+      const showCentres = document.getElementById("cooling-centres").checked;
+      const showAll = !showParks && !showCentres;
+
+      map.setLayoutProperty(
+        "parks-fill",
+        "visibility",
+        showParks || showAll ? "visible" : "none",
+      );
+      map.setLayoutProperty(
+        "parks-outline",
+        "visibility",
+        showParks || showAll ? "visible" : "none",
+      );
+      map.setLayoutProperty(
+        "cooling-centres-layer",
+        "visibility",
+        showCentres || showAll ? "visible" : "none",
+      );
+
+      clearBtn.classList.toggle("hidden", showAll);
+    }
+
+    navFilter.addEventListener("change", updateLayers);
+
+    clearBtn.addEventListener("click", () => {
+      document.getElementById("parks").checked = false;
+      document.getElementById("cooling-centres").checked = false;
+      updateLayers();
+    });
   });
 }
 
@@ -168,7 +219,7 @@ async function addCoolingCentresLayer(map) {
       fetch(`/api/cooling-centres/location/${c.map_item_id}`)
         .then((r) => r.json())
         .then((coords) => ({ centre: c, coords }))
-        .catch(() => ({ centre: c, coords: null }))
+        .catch(() => ({ centre: c, coords: null })),
     );
 
     const results = await Promise.all(coordPromises);
@@ -242,7 +293,7 @@ async function addCoolingCentresLayer(map) {
         `<ul>
           <li>${props.address}</li>
           <li>${props.type}</li>
-        </ul>`
+        </ul>`,
       );
     });
 
