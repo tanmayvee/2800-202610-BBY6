@@ -1,37 +1,45 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CoolSpot</title>
-    <link href="/styles/output.css" rel="stylesheet" />
-    <link href="/styles/style.css" rel="stylesheet" />
-    <link
-      href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <%- include("./tutorial.ejs", {showTutorial: showTutorial})%>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoolSpot</title>
+  <link href="/styles/output.css" rel="stylesheet" />
+  <link href="/styles/style.css" rel="stylesheet" />
+  <link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet" />
+</head>
+
+<body>
+  <%- include("./tutorial.ejs", {showTutorial: showTutorial})%>
     <div class="flex flex-col h-screen w-full relative">
+
+      <!-- Search Bar -->
+      <div
+        class="fixed top-4 left-1/2 z-[1100] flex w-[min(100%,28rem)] -translate-x-1/2 items-stretch gap-0 rounded-lg border border-gray-200 bg-white/95 shadow-lg backdrop-blur-sm pointer-events-auto"
+        role="search" aria-label="Map search">
+        <input id="map-search" type="search" name="q" placeholder="Search…" autocomplete="off"
+          class="min-w-0 flex-1 rounded-l-lg border-0 bg-transparent px-4 py-2.5 text-gray-900 placeholder:text-gray-500 outline-none ring-0 focus:ring-2 focus:ring-inset focus:ring-blue-500" />
+        <button id="map-search-button" type="button"
+          class="shrink-0 rounded-r-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          Search
+        </button>
+      </div>
+
       <!-- Map -->
       <main class="h-full w-full">
         <div id="map" class="h-full w-full"></div>
         <div id="drawer" class="flex flex-col">
           <div class="flex justify-between items-center">
             <div id="drawer-title" class="text-xl font-bold"></div>
-            <button
-              id="drawer-close"
-              class="bg-gray-600 text-white px-3 py-1 rounded-md" onclick="closeDrawer()">
+            <button id="drawer-close" class="bg-gray-600 text-white px-3 py-1 rounded-md" onclick="closeDrawer()">
               ✕
             </button>
           </div>
           <div id="drawer-content" class="flex-1"></div>
           <div class="flex flex-col gap-2 mt-4 max-w-md mx-auto w-full">
-            <button
-              class="bg-blue-600 text-white px-4 py-3 rounded-md font-semibold text-lg"
-            >
+            <button class="bg-blue-600 text-white px-4 py-3 rounded-md font-semibold text-lg">
               Go Here
             </button>
             <button class="bg-gray-600 text-white px-4 py-2 rounded-md">
@@ -43,13 +51,8 @@
 
       <!-- Floating temp/uv -->
       <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000]">
-        <div
-          class="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-xl border border-gray-200 text-center"
-        >
-          <span
-            class="text-xs font-bold tracking-wider text-gray-500 block mb-1"
-            >Current Temp</span
-          >
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-xl border border-gray-200 text-center">
+          <span class="text-xs font-bold tracking-wider text-gray-500 block mb-1">Current Temp</span>
           <p id="temp" class="text-2xl font-bold">--°C</p>
           <p id="uv" class="text-sm font-medium text-gray-700">UV: --</p>
         </div>
@@ -61,5 +64,7 @@
     <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/map.js"></script>
-  </body>
+    <script src="/js/search.js"></script>
+</body>
+
 </html>
