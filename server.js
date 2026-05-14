@@ -22,11 +22,11 @@ app.use(express.static("public"));
 
 // API Routes
 // These return JSON data and are called using fetch() inside EJS files
-app.use("/api/auth", authRouter);           // signup, login, logout
-app.use("/api/parks", parksRouter);         // Vancouver park GeoJSON for the map
-app.use("/api/uv", uvRouter);               // UV index and risk level
+app.use("/api/auth", authRouter); // signup, login, logout
+app.use("/api/parks", parksRouter); // Vancouver park GeoJSON for the map
+app.use("/api/uv", uvRouter); // UV index and risk level
 app.use("/api/cooling-centres", coolingRouter); // cooling centre locations
-app.use("/api/crowd", crowdRouter);         // crowd busyness reports
+app.use("/api/crowd", crowdRouter); // crowd busyness reports
 app.use("/api/locations", locationsRouter); // all map items (parks and cooling centres)
 app.use("/api/user-preferences", userPreferencesRouter); // user preferences for notifications, etc.
 
@@ -36,8 +36,12 @@ app.use("/api/user-preferences", userPreferencesRouter); // user preferences for
 
 // HOME - passes maptilerKey so the map can load
 app.get("/", (req, res) => {
-  res.render("index", { maptilerKey: process.env.MAPTILER_KEY, 
-                        showTutorial: true /*hardcoded for now */});
+  res.render("index", {
+    cssFiles: ["style.css"],
+    jsFiles: ["map.js", "main.js", "tutorial.js"],
+    maptilerKey: process.env.MAPTILER_KEY,
+    showTutorial: true /*hardcoded for now */,
+  });
 });
 
 app.get("/homepage", (req, res) => {
@@ -68,8 +72,9 @@ app.get("/location/:id", async (req, res) => {
     const supabase = require("./db/supabase");
 
     // Get coordinates using the database function
-    const { data: coords } = await supabase
-      .rpc("get_map_item_location", { p_map_item_id: parseInt(id) });
+    const { data: coords } = await supabase.rpc("get_map_item_location", {
+      p_map_item_id: parseInt(id),
+    });
 
     // Try cooling centre first
     const { data: coolingData } = await supabase
