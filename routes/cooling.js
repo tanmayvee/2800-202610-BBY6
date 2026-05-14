@@ -12,7 +12,9 @@ router.get("/", async (req, res) => {
         map_item_id,
         address,
         type,
-        name
+        name,
+        hours,
+        description
       `);
 
     if (error) throw error;
@@ -101,7 +103,9 @@ router.get("/:id", async (req, res) => {
         map_item_id,
         address,
         type,
-        name
+        name,
+        hours,
+        description
       `)
       .eq("map_item_id", id)
       .single();

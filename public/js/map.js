@@ -259,6 +259,8 @@ async function addCoolingCentresLayer(map) {
           name: r.centre.name,
           address: r.centre.address,
           type: r.centre.type,
+          hours: r.centre.hours,
+          description: r.centre.description,
         },
       }));
 
@@ -315,6 +317,8 @@ async function addCoolingCentresLayer(map) {
         `<ul>
           <li>${props.address}</li>
           <li>${props.type}</li>
+          <li>${props.hours || 'Hours unavailable'}</li>
+          <li>${props.description || ''}</li>
         </ul>`,
       );
     });

@@ -21,10 +21,20 @@ class VInput extends HTMLElement {
   }
 
   /**
+   * Sets the value of the input to a specified value.
+   *
+   * @param {*} value Value to be set
+   */
+  setValue(value) {
+    // No point in casting here
+    this._input.value = value;
+  }
+
+  /**
    * Safely gets the value of the user input and automatically
    * casts the value. Add a layer of safety against injection.
    *
-   * @param opt_fallbackValue Fallback value to return if the input is invalid
+   * @param {*} opt_fallbackValue Fallback value to return if the input is invalid
    * @return Casted Input Value
    */
   getValue(opt_fallbackValue) {
