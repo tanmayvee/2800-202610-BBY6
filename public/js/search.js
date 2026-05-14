@@ -113,13 +113,24 @@ document.addEventListener("click", (e) => {
   closeSearchPanel();
 });
 
+function eventTargetElement(target) {
+  if (target instanceof Element) {
+    return target;
+  }
+  if (target && target.parentElement) {
+    return target.parentElement;
+  }
+  return null;
+}
+
 async function activateSearchResultRow(row, e) {
   const id = row.getAttribute("data-map-item-id");
   if (!id) {
     return;
   }
-  const link = e.target.closest("a[href]");
-  if (link && row.contains(link)) {
+  const t = eventTargetElement(e.target);
+  const visitLink = t && t.closest("a.search-result-visit[href]");
+  if (visitLink && row.contains(visitLink)) {
     setTimeout(() => closeSearchPanel(), 0);
     return;
   }
@@ -134,7 +145,8 @@ async function activateSearchResultRow(row, e) {
 
 if (searchResultsList) {
   searchResultsList.addEventListener("click", (e) => {
-    const row = e.target.closest("[data-map-item-id]");
+    const t = eventTargetElement(e.target);
+    const row = t && t.closest("[data-map-item-id]");
     if (!row || !searchResultsList.contains(row)) {
       return;
     }
@@ -145,10 +157,11 @@ if (searchResultsList) {
     if (e.key !== "Enter" && e.key !== " ") {
       return;
     }
-    if (e.target.closest("a[href]")) {
+    const keyTarget = eventTargetElement(e.target);
+    if (keyTarget && keyTarget.closest("a.search-result-visit[href]")) {
       return;
     }
-    const row = e.target.closest("[data-map-item-id]");
+    const row = keyTarget && keyTarget.closest("[data-map-item-id]");
     if (!row || !searchResultsList.contains(row)) {
       return;
     }

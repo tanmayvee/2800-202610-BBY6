@@ -65,7 +65,7 @@ router.get("/:id", async (req, res) => {
         ns_street_name,
         neighbourhood_name,
         neighbourhood_url,
-        hectares,
+        hectare,
         map_item (
           map_item_id,
           location,

@@ -48,8 +48,9 @@ async function openDrawerForMapItem(mapItemId) {
       const neighbourhoodLine = loc.neighbourhood_name
         ? `<p class="mb-2">${escapeHtml(loc.neighbourhood_name)}</p>`
         : "";
+      const ha = loc.hectare ?? loc.hectares;
       const hectaresLine =
-        loc.hectares != null ? `<p class="text-sm text-gray-600">${escapeHtml(String(loc.hectares))} ha</p>` : "";
+        ha != null ? `<p class="text-sm text-gray-600">${escapeHtml(String(ha))} ha</p>` : "";
       const nbLink =
         loc.neighbourhood_url
           ? `<p class="mt-2"><a href="${escapeHtml(loc.neighbourhood_url)}" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Neighbourhood info</a></p>`

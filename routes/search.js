@@ -12,6 +12,18 @@ const searchResultTemplate = path.join(
   "search-result.ejs"
 );
 
+function parkNeighbourhoodVisitUrl(row) {
+  const raw = row.neighbourhood_url ?? row.neighbourhoodUrl;
+  if (raw == null || typeof raw !== "string") {
+    return "";
+  }
+  const trimmed = raw.trim();
+  if (trimmed === "") {
+    return "";
+  }
+  return trimmed;
+}
+
 /**
  * @param {object} row
  * @param {"cooling" | "park"} kind
@@ -27,11 +39,12 @@ function rowToTemplateLocals(row, kind) {
     kind === "cooling"
       ? row.type || "Cooling centre"
       : "Park";
+  const visit_site_url = kind === "park" ? parkNeighbourhoodVisitUrl(row) : "";
   return {
     map_item_id: mapItemId != null ? String(mapItemId) : "",
     item_name: name,
     item_type: itemType,
-    item_link: `/location/${mapItemId}`,
+    visit_site_url,
   };
 }
 
