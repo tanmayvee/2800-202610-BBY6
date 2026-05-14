@@ -6,13 +6,72 @@ let isClicked = false;
 const drawer = document.getElementById("drawer");
 const drawerTitle = document.getElementById("drawer-title");
 const drawerContent = document.getElementById("drawer-content");
+const drawerCrowdingRow = document.getElementById("drawer-crowding-row");
+const drawerCrowdingCount = document.getElementById("drawer-crowding-count");
 
-function openDrawer(title, content) {
+function resetDrawerCrowding() {
+  if (drawerCrowdingRow) {
+    drawerCrowdingRow.classList.add("hidden");
+  }
+  if (drawerCrowdingCount) {
+    drawerCrowdingCount.textContent = "—";
+  }
+}
+
+/**
+ * Loads crowding via get_location_crowding (SECURITY DEFINER RPC; param target_map_item_id).
+ * @param {string|null|undefined} mapItemId
+ */
+async function refreshDrawerCrowding(mapItemId) {
+  if (!drawerCrowdingRow || !drawerCrowdingCount) {
+    return;
+  }
+  if (!mapItemId) {
+    resetDrawerCrowding();
+    return;
+  }
+
+  drawerCrowdingRow.classList.remove("hidden");
+  drawerCrowdingCount.textContent = "…";
+
+  try {
+    const res = await fetch(
+      `/api/locations/${encodeURIComponent(mapItemId)}/crowding`,
+    );
+    if (!res.ok) {
+      drawerCrowdingCount.textContent = "?";
+      return;
+    }
+    const body = await res.json();
+    const n = typeof body.count === "number" ? body.count : Number(body.count);
+    drawerCrowdingCount.textContent = Number.isFinite(n) ? String(n) : "0";
+  } catch (err) {
+    console.error("refreshDrawerCrowding:", err);
+    drawerCrowdingCount.textContent = "?";
+  }
+}
+
+window.refreshDrawerCrowding = refreshDrawerCrowding;
+
+/**
+ * @param {string} title
+ * @param {string} content
+ * @param {string|number|null|undefined} mapItemId Database map_item_id when known (cooling centres, search).
+ */
+function openDrawer(title, content, mapItemId = null) {
+  window.currentOpenMapItemId = null;
+  resetDrawerCrowding();
   drawer.classList.remove("open");
   setTimeout(() => {
     drawerTitle.textContent = title;
     drawerContent.innerHTML = content;
     drawer.classList.add("open");
+    const idStr =
+      mapItemId !== null && mapItemId !== undefined && String(mapItemId).trim() !== ""
+        ? String(mapItemId).trim()
+        : null;
+    window.currentOpenMapItemId = idStr;
+    refreshDrawerCrowding(idStr);
   }, 300);
 }
 
@@ -67,7 +126,7 @@ async function openDrawerForMapItem(mapItemId) {
       content = `<p class="text-sm text-gray-600">Details for this location are limited.</p>`;
     }
 
-    openDrawer(title, content);
+    openDrawer(title, content, mapItemId);
 
     const map = window.appMap;
     if (!map) {
@@ -97,6 +156,8 @@ window.openDrawerForMapItem = openDrawerForMapItem;
 
 function closeDrawer() {
   drawer.classList.remove("open");
+  window.currentOpenMapItemId = null;
+  resetDrawerCrowding();
 }
 window.closeDrawer = closeDrawer; // Make globally accessible for inline onclick
 
@@ -214,15 +275,40 @@ async function addParksLayer(map) {
       },
     });
 
-    // Show drawer on click
-    map.on("click", "parks-fill", (e) => {
+    // Show drawer on click (resolve map_item_id from DB so crowding / check-in work)
+    map.on("click", "parks-fill", async (e) => {
       isClicked = true;
       const props = e.features[0].properties;
-      console.log(props);
-      openDrawer(
-        props.park_name,
-        `<a href=${props.park_url} target="_blank" class="underline">Visit website<a/>`,
-      );
+      const titleRaw =
+        props.park_name != null && String(props.park_name).trim() !== ""
+          ? String(props.park_name).trim()
+          : props.name != null && String(props.name).trim() !== ""
+            ? String(props.name).trim()
+            : "Park";
+      const parkUrl = props.park_url != null ? String(props.park_url) : "";
+      const parkLink =
+        parkUrl !== ""
+          ? `<a href="${escapeHtml(parkUrl)}" target="_blank" rel="noopener noreferrer" class="underline">Visit website</a>`
+          : "";
+
+      let mapItemId = null;
+      if (titleRaw !== "") {
+        try {
+          const r = await fetch(
+            `/api/locations/park-by-name?name=${encodeURIComponent(titleRaw)}`,
+          );
+          if (r.ok) {
+            const j = await r.json();
+            if (j.map_item_id != null) {
+              mapItemId = String(j.map_item_id);
+            }
+          }
+        } catch (lookupErr) {
+          console.warn("park map_item lookup:", lookupErr);
+        }
+      }
+
+      openDrawer(titleRaw, parkLink, mapItemId);
     });
 
     // Pointer cursor on hover
@@ -323,7 +409,8 @@ async function addCoolingCentresLayer(map) {
         `<ul>
           <li>${props.address}</li>
           <li>${props.type}</li>
-        </ul>`
+        </ul>`,
+        props.map_item_id,
       );
     });
 

@@ -50,8 +50,13 @@
             </button>
           </div>
           <div id="drawer-content" class="flex-1"></div>
+          <div id="drawer-crowding-row" class="hidden mt-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800"
+            role="status" aria-live="polite">
+            <span class="font-medium text-gray-600">People checked in here:</span>
+            <span id="drawer-crowding-count" class="ml-1 font-semibold text-gray-900">—</span>
+          </div>
           <div class="flex flex-col gap-2 mt-4 max-w-md mx-auto w-full">
-            <button class="bg-blue-600 text-white px-4 py-3 rounded-md font-semibold text-lg">
+            <button id="current-location-button" class="bg-blue-600 text-white px-4 py-3 rounded-md font-semibold text-lg">
               Go Here
             </button>
             <button class="bg-gray-600 text-white px-4 py-2 rounded-md">
@@ -77,6 +82,7 @@
     <script src="/js/main.js"></script>
     <script src="/js/map.js"></script>
     <script src="/js/search.js"></script>
+    <script src="/js/currentlocation.js"></script>
 </body>
 
 </html>
