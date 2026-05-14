@@ -293,6 +293,8 @@ async function addCoolingCentresLayer(map) {
         `<ul>
           <li>${props.address}</li>
           <li>${props.type}</li>
+          <li>${props.hours || 'Hours unavailable'}</li>
+          <li>${props.description || ''}</li>
         </ul>`,
       );
     });
