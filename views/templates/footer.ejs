@@ -3,7 +3,7 @@
         <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
     <% } %>
     <% for(let script of jsFiles) { %>
-        <script src="/js/<%= script %>"></script>
+        <script type="module" src="/js/<%= script %>"></script>
     <% } %>
   </body>
 </html>

@@ -121,7 +121,10 @@ app.get("/location/:id", async (req, res) => {
 });
 
 app.get("/usersettings", (req, res) => {
-  res.render("usersettings");
+  res.render("usersettings", {
+    cssFiles: ["usersettings.css"],
+    jsFiles: ["settings.js", "main.js"],
+  });
 });
 
 app.listen(PORT, () => {
