@@ -49,11 +49,11 @@ app.get("/homepage", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  res.render("login", { cssFiles: ["style.css", "auth.css"] });
 });
 
 app.get("/signup", (req, res) => {
-  res.render("signup");
+  res.render("signup", { cssFiles: ["style.css", "auth.css"] });
 });
 
 app.get("/crowds", (req, res) => {
