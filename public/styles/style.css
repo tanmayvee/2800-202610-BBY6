@@ -1,4 +1,5 @@
-#drawer {
+#drawer,
+#filter-drawer {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -9,12 +10,23 @@
   transform: translateY(100%);
   transition: transform 0.3s ease;
   z-index: 9999;
-  padding: 24px;
+  padding: 20px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
 
-#drawer.open {
+#drawer.open,
+#filter-drawer.open {
   transform: translateY(0);
+}
+
+#filter-btn {
+  transition: bottom 0.3s ease;
+}
+
+#filter-drawer.open ~ #filter-btn {
+  bottom: 300px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
