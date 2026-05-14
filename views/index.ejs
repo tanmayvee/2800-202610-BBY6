@@ -1,6 +1,6 @@
 <%- include('templates/header', { cssFiles: cssFiles }) %>
 
-    <!-- <%- include("./tutorial.ejs", {showTutorial: showTutorial})%> -->
+    <%- include("./tutorial.ejs", {showTutorial: showTutorial})%>
     
     <div class="flex flex-col h-screen w-full relative">
       <main class="h-full w-full relative">
@@ -13,8 +13,7 @@
 
         <!-- Current Temp/UV  -->
         <%- include("current-temp-uv.ejs") %>    
-
-        <!-- Parks/Cooling Centres Info -->
+        
         <%- include("parks-centres.ejs") %>
 
         <!-- Uv Info button -->
