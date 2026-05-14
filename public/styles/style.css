@@ -1,3 +1,4 @@
+/* Drawer */
 #drawer,
 #filter-drawer {
   position: fixed;
@@ -29,4 +30,61 @@
   bottom: 300px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+}
+
+/* Popup */
+#info-popup {
+  position: absolute;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  z-index: 9998;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: none;
+}
+
+#info-popup.open {
+  display: block;
+}
+
+.maplibregl-ctrl-top-right {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  right: 16px !important;
+}
+
+/* First-time user popup */
+.popup {
+  position: fixed;
+  background-color: aliceblue;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 15px;
+  height: 25vh;
+  z-index: 2;
+  text-align: center;
+  align-content: center;
+  padding: 20px;
+}
+
+.popupBackground {
+  background-color: black;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  z-index: 1;
+  opacity: 0.2;
+}
+
+.popupbutton {
+  background-color: cadetblue;
+  border-radius: 15px;
+  border: 3px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
