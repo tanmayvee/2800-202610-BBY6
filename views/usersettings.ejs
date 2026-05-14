@@ -1,7 +1,4 @@
-  <%- include("templates/header")%>
-    <link href="/styles/usersettings.css" rel="stylesheet" />
-  </head>
-  <body>
+  <%- include('templates/header', { cssFiles: cssFiles }) %>
     <header>
       <a class="home-page-btn" href="/"><img draggable="false" src="/img/arrow-right.svg"/></a>
       <h2>Settings</h2>
@@ -40,7 +37,4 @@
         </div>
       </div>
     </main>
-    <!-- Scripts -->
-    <script type="module" src="/js/settings.js"></script>
-  </body>
-</html>
+<%- include('templates/footer', { jsFiles: jsFiles }) %>
