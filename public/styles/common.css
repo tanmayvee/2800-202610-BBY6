@@ -1,0 +1,6 @@
+body {
+  --theme: "#fff";
+  --theme-filter: invert(0);
+  --theme-text: "#000";
+  --theme-text-dark: darkslategray;
+}

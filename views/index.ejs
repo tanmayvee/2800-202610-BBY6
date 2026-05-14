@@ -1,12 +1,4 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CoolSpot</title>
-    <link href="/styles/output.css" rel="stylesheet" />
-    <link href="/styles/style.css" rel="stylesheet" />
+  <%- include("templates/header")%>
     <link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet" />
   </head>
   <body>
@@ -51,19 +43,23 @@
         </div>
 
         <!-- Filter Button -->
-        <button id="filter-btn" class="absolute rounded-2xl z-[9998] bottom-6 left-6 p-3 bg-white hover:bg-gray-100 transition">
-          <img src="/img/filter.svg" alt="Filter" style="width: 50px; height: 50px;" />
+        <button id="filter-btn" class="absolute rounded-2xl z-[9998] bottom-12 left-6 p-3 bg-white hover:bg-gray-100 cursor-pointer transition">
+          <img class="btn-icon" src="/img/filter.svg" alt="Filter" draggable="false" />
         </button>
 
         <!-- Floating temp/uv -->
-        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000]">
-          <div class="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-xl border border-gray-200 text-center">
-            <span class="text-xs font-bold tracking-wider text-gray-500 block mb-1">Current Temp</span>
+        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 z-[1000]">
+          <div id="floating-temp" class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 text-center">
+            <span class="text-xs font-bold tracking-wider text-gray-500 block mb-1">Current Temperature</span>
             <p id="temp" class="text-2xl font-bold">--°C</p>
             <p id="uv" class="text-sm font-medium text-gray-700">UV: --</p>
           </div>
         </div>
 
+        <!-- Settings Button -->
+        <a id="settings-btn" href="/usersettings" class="absolute rounded-2xl z-[9998] bottom-12 right-6 p-3 bg-white cursor-pointer hover:bg-gray-100 transition">
+          <img class="btn-icon" src="/img/settings.svg" alt="Settings" draggable="false" />
+        </a>
       </main>
     </div>
 

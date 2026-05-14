@@ -1,2 +1,46 @@
-<!DOCTYPE html>
-Temporary user settings page.
+  <%- include("templates/header")%>
+    <link href="/styles/usersettings.css" rel="stylesheet" />
+  </head>
+  <body>
+    <header>
+      <a class="home-page-btn" href="/"><img draggable="false" src="/img/arrow-right.svg"/></a>
+      <h2>Settings</h2>
+    </header>
+    <main class="container">
+      <div class="wrapper">
+        <label id="username">
+          <span>Username:</span>
+          <v-input class="input" type="text" min="3" max="30" required name="username"></v-input>
+        </label>
+        <label id="password">
+          <span>Password:</span>
+          <v-input class="input" type="password" min="10" max="50" required name="password"></v-input>
+        </label>
+        <label id="email">
+          <span>Email:</span>
+          <v-input class="input" type="email" name="email" max="50" required placeholder="coolspot@example.com"></v-input>
+        </label>
+        <label id="theme" class="flex-item">
+          <i-switch></i-switch>
+          <img draggable="false" class="mode-ctrl" src="/img/sun.svg" />
+          <img draggable="false" class="mode-ctrl" src="/img/moon.svg" />
+          <span>Dark Mode</span>
+        </label>
+        <label id="alerts" class="flex-item">
+          <i-switch></i-switch>
+          <span>Weather Alerts</span>
+        </label>
+        <label id="auto-join" class="flex-item">
+          <i-switch></i-switch>
+          <span>Auto-Join Nearby Locations</span>
+        </label>
+        <div class="footer-nav">
+          <button id="save" class="ctrl-btn" disabled>Save</button>
+          <a class="ctrl-btn">Logout</a>
+        </div>
+      </div>
+    </main>
+    <!-- Scripts -->
+    <script type="module" src="/js/settings.js"></script>
+  </body>
+</html>
