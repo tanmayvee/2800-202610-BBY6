@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const requireAuth = require("./middleware/auth");
+
 
 const parksRouter = require("./routes/parks");
 const uvRouter = require("./routes/uv");
@@ -35,7 +37,7 @@ app.use("/api/user-preferences", userPreferencesRouter); // user preferences for
 // Access server variables in EJS using <%= variableName %>
 
 // HOME - passes maptilerKey so the map can load
-app.get("/", async (req, res) => {
+app.get("/", requireAuth,async (req, res) => {
   const supabase = require("./db/supabase");
   let { data, error } = await supabase.from("user_preference")
       .select("*")
@@ -123,17 +125,18 @@ app.get("/location/:id", async (req, res) => {
   }
 });
 
-app.get("/usersettings", (req, res) => {
+app.get("/usersettings", requireAuth, (req, res) => {
   res.render("usersettings");
 });
 
-app.post("/testToken", async (req, res) => {
+app.post("/testToken", requireAuth, async (req, res) => {
   const supabase = require("./db/supabase");
   const { error } = await supabase
     .from("user_preference")
     .update({ show_tutorial: false })  // column: value
-    .eq("user_id", req.user.id);                 // which row to update
+    .eq("uid", req.user.id);                 // which row to update
 });
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

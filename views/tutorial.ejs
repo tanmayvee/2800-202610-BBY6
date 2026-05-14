@@ -76,7 +76,7 @@
   }
 
   async function disableTutorialOnSubsequent() {
-      await fetch("/testToken", {
+      await fetch("/disableTutorial", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ showTutorial: false }),
