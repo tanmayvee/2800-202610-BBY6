@@ -237,6 +237,8 @@ async function addCoolingCentresLayer(map) {
           name: r.centre.name,
           address: r.centre.address,
           type: r.centre.type,
+          hours: r.centre.hours,
+          description: r.centre.description,
         },
       }));
 
