@@ -64,11 +64,22 @@
       document.querySelector(".popupText").textContent = steps[currentSteps].text;
     }
     if(currentSteps == steps.length - 1) {
-      document.querySelector(".popupbutton").textContent = "Close";
+      let button = document.querySelector(".popupbutton");
+      button.textContent = "Close";
     }
     if(currentSteps == steps.length) {
       document.querySelector(".popupBackground").style.display = 'none';
       document.querySelector(".popup").style.display = 'none';
+
+      disableTutorialOnSubsequent();
     }
+  }
+
+  async function disableTutorialOnSubsequent() {
+      await fetch("/testToken", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ showTutorial: false }),
+    });
   }
 </script>

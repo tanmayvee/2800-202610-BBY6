@@ -41,7 +41,7 @@ app.get("/", async (req, res) => {
       .select("*")
       .eq("uid", req.user.id)
       .single();
-      
+
   if(!error) {
     res.render("index", { maptilerKey: process.env.MAPTILER_KEY, 
                         showTutorial: data.show_tutorial /*hardcoded for now */});
@@ -127,6 +127,13 @@ app.get("/usersettings", (req, res) => {
   res.render("usersettings");
 });
 
+app.post("/testToken", async (req, res) => {
+  const supabase = require("./db/supabase");
+  const { error } = await supabase
+    .from("user_preference")
+    .update({ show_tutorial: false })  // column: value
+    .eq("user_id", req.user.id);                 // which row to update
+});
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
