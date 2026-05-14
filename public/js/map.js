@@ -3,6 +3,7 @@ const VANCOUVER_LNG = -123.1207;
 
 let isClicked = false;
 let isFilterClicked = false;
+let isInfoClicked = false;
 
 const drawer = document.getElementById("drawer");
 const drawerTitle = document.getElementById("drawer-title");
@@ -40,7 +41,7 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
     zoom: zoom,
   });
 
-  addControls(map);
+  //   addControls(map);
 
   map.once("load", async () => {
     await addParksLayer(map);
@@ -51,14 +52,39 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
     const uvLng = appState.userLngLat ? appState.userLngLat[0] : VANCOUVER_LNG;
     await updateMapUv(uvLat, uvLng, map);
 
+    // toggle info popup when info button is clicked
+    document.getElementById("info-btn").addEventListener("click", () => {
+      isInfoClicked = true;
+      const popup = document.getElementById("info-popup");
+      const img = document.querySelector("#info-btn img");
+
+      popup.classList.toggle("open");
+      const isOpen = popup.classList.contains("open");
+      img.src = isOpen ? "/img/exit.svg" : "/img/info.svg";
+    });
+
+    // close info popup when clicking outside
+    document.addEventListener("click", (e) => {
+      const infoBtn = document.getElementById("info-btn");
+      const infoPopup = document.getElementById("info-popup");
+
+      if (!infoBtn.contains(e.target) && !infoPopup.contains(e.target)) {
+        infoPopup.classList.remove("open");
+        document.querySelector("#info-btn img").src = "/img/info.svg";
+      }
+    });
+
     // Clicking outside of drawer or clicking a marker/shaded area closes it
     map.on("click", (e) => {
       if (!isClicked) {
         closeDrawer();
       }
       document.getElementById("filter-drawer").classList.remove("open");
+      document.getElementById("info-popup").classList.remove("open");
+      document.querySelector("#info-btn img").src = "/img/info.svg";
       isClicked = false;
       isFilterClicked = false;
+      isInfoClicked = false;
     });
 
     // Close button
@@ -95,10 +121,6 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
       isFilterClicked = true;
       document.getElementById("filter-drawer").classList.toggle("open");
     });
-
-    // ------------------------------------------------------------
-    // Filtering
-    // ------------------------------------------------------------
 
     // ------------------------------------------------------------
     // Filtering
@@ -144,9 +166,9 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
 // ------------------------------------------------------------
 // Add zoom + rotation controls
 // ------------------------------------------------------------
-function addControls(map) {
-  map.addControl(new maplibregl.NavigationControl(), "top-right");
-}
+// function addControls(map) {
+//   map.addControl(new maplibregl.NavigationControl(), "top-right");
+// }
 
 // ------------------------------------------------------------
 // Fetch Vancouver parks GeoJSON and add polygon + outline layers
