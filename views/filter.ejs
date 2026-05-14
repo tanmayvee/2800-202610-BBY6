@@ -1,0 +1,26 @@
+<!-- Filter button -->
+
+<button id="filter-btn" class="absolute rounded-2xl z-[9998] bottom-6 left-6 p-3 bg-white hover:bg-gray-100 transition">
+    <img src="/img/filter.svg" alt="Filter" style="width: 50px; height: 50px;" />
+</button>
+
+<!-- Filter drawer -->
+<div id="filter-drawer">        
+    <div class="flex justify-center mb-4">
+        <div class="w-60 h-1 bg-gray-300 rounded-full"></div>
+    </div> 
+    <h2 class="text-lg text-center font-semibold mb-4">Shade Filters<h2>                  
+    <div class="flex flex-col items-center">
+        <nav id="nav-filter" class="flex flex-col gap-2">                   
+            <div>
+                <input type="checkbox" name="layer-filter" id="parks" class="sr-only peer" />
+                <label for="parks" class="block px-5 py-3 rounded-xl border border-gray-200 text-gray-500 text-[15px] cursor-pointer peer-checked:bg-gray-100 peer-checked:text-gray-900 peer-checked:border-gray-400 peer-focus-visible:ring-2">Parks</label>
+            </div>
+            <div>
+                <input type="checkbox" name="layer-filter" id="cooling-centres" class="sr-only peer" />
+                <label for="cooling-centres" class="block px-5 py-3 rounded-xl border border-gray-200 text-gray-500 text-[15px] cursor-pointer peer-checked:bg-gray-100 peer-checked:text-gray-900 peer-checked:border-gray-400 peer-focus-visible:ring-2">Cooling Centres</label>
+            </div>
+        </nav>
+        <button id="clear-filters" class="hidden filter-btn text-left mt-6 block px-5 py-3 rounded-xl border border-gray-200 text-gray-500 text-[15px] cursor-pointer">Clear all</button>
+    </div>
+</div>
