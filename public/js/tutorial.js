@@ -23,3 +23,8 @@ function cyclePopup() {
     document.querySelector(".popup").style.display = "none";
   }
 }
+
+const btn = document.querySelector(".popupbutton");
+if (btn) {
+  btn.addEventListener("click", cyclePopup);
+}
