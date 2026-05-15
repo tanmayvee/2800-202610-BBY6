@@ -179,14 +179,8 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
 }
 
 // ------------------------------------------------------------
-// Add zoom + rotation controls
-// ------------------------------------------------------------
-// function addControls(map) {
-//   map.addControl(new maplibregl.NavigationControl(), "top-right");
-// }
-
-// ------------------------------------------------------------
 // Fetch Vancouver parks GeoJSON and add polygon + outline layers
+// 2nd API call to get address
 // ------------------------------------------------------------
 async function addParksLayer(map) {
   try {
@@ -222,25 +216,43 @@ async function addParksLayer(map) {
     });
 
     // Show drawer on click
-    map.on("click", "parks-fill", (e) => {
+
+    map.on("click", "parks-fill", async (e) => {
       isClicked = true;
       const props = e.features[0].properties;
-      console.log(props);
-      openDrawer(
-        props.park_name,
-        `<a href=${props.park_url} target="_blank" class="underline">Visit website<a/>`,
-      );
+
+      // 2nd API call to get address by park name (from polygon api call)
+      try {
+        const addressRes = await fetch(
+          `https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/parks/records?where=name="${props.park_name}"&limit=1`,
+        );
+
+        const addressData = await addressRes.json();
+        const result = addressData.results[0];
+        const address = result
+          ? `${result.streetnumber} ${result.streetname}`
+          : "Address not available";
+
+        openDrawer(
+          props.park_name,
+          `
+            <p>${address}</p>
+            <a href=${props.park_url} target="_blank" class="underline">Visit website</a>
+          `,
+        );
+      } catch (err) {
+        console.error("Failed to fetch address:", err);
+      }
     });
 
     // Pointer cursor on hover
     map.on("mouseenter", "parks-fill", () => {
       map.getCanvas().style.cursor = "pointer";
     });
+
     map.on("mouseleave", "parks-fill", () => {
       map.getCanvas().style.cursor = "";
     });
-
-    console.log("Parks layer loaded!");
   } catch (err) {
     console.error("Failed to load parks data:", err);
   }
