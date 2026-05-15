@@ -1,0 +1,39 @@
+<div id="chat-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+  <div class="bg-white rounded-lg shadow-lg w-11/12 h-5/6 md:w-1/2 lg:w-1/3 flex flex-col">
+    <!-- Header -->
+    <div class="flex justify-between items-center border-b p-4">
+      <h2 class="text-lg font-bold" id="chat-location-name">Chat about location</h2>
+      <button
+        id="chat-close"
+        class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+        onclick="closeChat()"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Messages container -->
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50"></div>
+
+    <!-- Input area -->
+    <div class="border-t p-4 bg-white">
+      <div class="flex gap-2">
+        <input
+          type="text"
+          id="chat-input"
+          placeholder="Ask about this location..."
+          class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onkeypress="handleChatKeypress(event)"
+        />
+        <button
+          id="chat-send"
+          class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-semibold"
+          onclick="sendChatMessage()"
+        >
+          Send
+        </button>
+      </div>
+      <div id="chat-error" class="text-red-500 text-sm mt-2 hidden"></div>
+    </div>
+  </div>
+</div>

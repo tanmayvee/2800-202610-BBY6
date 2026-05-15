@@ -9,12 +9,24 @@ const drawer = document.getElementById("drawer");
 const drawerTitle = document.getElementById("drawer-title");
 const drawerContent = document.getElementById("drawer-content");
 
-function openDrawer(title, content) {
+function openDrawer(title, content, locationName = "", locationContext = "") {
   drawer.classList.remove("open");
   setTimeout(() => {
     drawerTitle.textContent = title;
     drawerContent.innerHTML = content;
     drawer.classList.add("open");
+    
+    // Add chat button if location name is provided
+    if (locationName) {
+      const buttonContainer = drawer.querySelector(".flex.flex-col.gap-2");
+      if (buttonContainer) {
+        const chatBtn = document.createElement("button");
+        chatBtn.className = "bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 font-semibold";
+        chatBtn.textContent = "Chat about this location";
+        chatBtn.onclick = () => openChat(locationName, locationContext);
+        buttonContainer.insertBefore(chatBtn, buttonContainer.firstChild);
+      }
+    }
   }, 300);
 }
 
@@ -214,6 +226,7 @@ async function addParksLayer(map) {
       openDrawer(
         props.park_name,
         `<a href=${props.park_url} target="_blank" class="underline">Visit website<a/>`,
+        props.park_name,
       );
     });
 
@@ -312,6 +325,7 @@ async function addCoolingCentresLayer(map) {
     map.on("click", "cooling-centres-layer", (e) => {
       isClicked = true;
       const props = e.features[0].properties;
+      const context = `Address: ${props.address}, Type: ${props.type}`;
       openDrawer(
         props.name,
         `<ul>
@@ -320,6 +334,8 @@ async function addCoolingCentresLayer(map) {
           <li>${props.hours || 'Hours unavailable'}</li>
           <li>${props.description || ''}</li>
         </ul>`,
+        props.name,
+        context,
       );
     });
 
