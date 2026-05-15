@@ -17,8 +17,10 @@ const DEFAULT_LAT = 49.2827;
 const RPC_CONCURRENCY = 10;
 
 /**
- * @param {unknown} data
- * @returns {number}
+ * Parses crowding count returned from Supabase RPC into a non-negative integer.
+ *
+ * @param {*} data value returned by get_location_crowding RPC
+ * @returns numeric crowding count for sorting and display
  */
 function crowdingCountFromRpcData(data) {
   let count = 0;
@@ -43,8 +45,11 @@ function crowdingCountFromRpcData(data) {
 }
 
 /**
- * @param {object} row
- * @param {"cooling" | "park"} kind
+ * Maps a cooling centre or park database row to template variables for search-result.ejs.
+ *
+ * @param {*} row cooling centre or park row from search RPC
+ * @param {*} kind String "cooling" or "park"
+ * @returns locals object with map_item_id, item_name, item_type, item_link
  */
 function rowToTemplateLocals(row, kind) {
   const mapItemId = row.map_item_id ?? row.id;
@@ -65,6 +70,12 @@ function rowToTemplateLocals(row, kind) {
   };
 }
 
+/**
+ * Renders one search result list item HTML from the EJS template.
+ *
+ * @param {*} locals variables passed to search-result.ejs
+ * @returns Promise that resolves to rendered HTML string
+ */
 function renderSearchResultHtml(locals) {
   return new Promise((resolve, reject) => {
     ejs.renderFile(searchResultTemplate, locals, (err, html) => {
@@ -78,9 +89,12 @@ function renderSearchResultHtml(locals) {
 }
 
 /**
- * @param {number[]} ids
- * @param {number} batchSize
- * @param {(id: number) => Promise<void>} fn
+ * Runs async work for ids in parallel batches to limit RPC concurrency.
+ *
+ * @param {*} ids array of map item ids to process
+ * @param {*} batchSize maximum concurrent calls per batch
+ * @param {*} fn async function invoked with each id
+ * @returns Promise that resolves when all batches complete
  */
 async function runBatched(ids, batchSize, fn) {
   for (let i = 0; i < ids.length; i += batchSize) {
@@ -90,8 +104,11 @@ async function runBatched(ids, batchSize, fn) {
 }
 
 /**
- * @param {{ locals: object, distance_m: number | null, crowding: number }} a
- * @param {{ locals: object, distance_m: number | null, crowding: number }} b
+ * Compares two enriched search rows by item name for stable tie-breaking.
+ *
+ * @param {*} a enriched row with locals, distance_m, crowding
+ * @param {*} b enriched row with locals, distance_m, crowding
+ * @returns comparison result for Array.sort
  */
 function compareByName(a, b) {
   const na = String(a.locals.item_name || "");
@@ -100,9 +117,12 @@ function compareByName(a, b) {
 }
 
 /**
- * @param {{ locals: object, distance_m: number | null, crowding: number }} a
- * @param {{ locals: object, distance_m: number | null, crowding: number }} b
- * @param {boolean} asc
+ * Compares two enriched search rows by distance from the search point.
+ *
+ * @param {*} a enriched row with distance_m
+ * @param {*} b enriched row with distance_m
+ * @param {Boolean} asc true for ascending distance
+ * @returns comparison result for Array.sort
  */
 function compareDistance(a, b, asc) {
   const aNull = a.distance_m == null || !Number.isFinite(a.distance_m);
@@ -128,9 +148,12 @@ function compareDistance(a, b, asc) {
 }
 
 /**
- * @param {{ locals: object, distance_m: number | null, crowding: number }} a
- * @param {{ locals: object, distance_m: number | null, crowding: number }} b
- * @param {boolean} asc
+ * Compares two enriched search rows by crowding count.
+ *
+ * @param {*} a enriched row with crowding
+ * @param {*} b enriched row with crowding
+ * @param {Boolean} asc true for ascending crowding
+ * @returns comparison result for Array.sort
  */
 function compareCrowding(a, b, asc) {
   const ca = a.crowding;
@@ -145,9 +168,12 @@ function compareCrowding(a, b, asc) {
 }
 
 /**
- * @param {{ locals: object, distance_m: number | null, crowding: number }} a
- * @param {{ locals: object, distance_m: number | null, crowding: number }} b
- * @param {boolean} asc
+ * Compares two enriched search rows by item type, then by name.
+ *
+ * @param {*} a enriched row with locals.item_type
+ * @param {*} b enriched row with locals.item_type
+ * @param {Boolean} asc true for ascending type order
+ * @returns comparison result for Array.sort
  */
 function compareType(a, b, asc) {
   const ta = String(a.locals.item_type || "");

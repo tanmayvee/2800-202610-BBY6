@@ -10,6 +10,11 @@ const searchSortOrder = document.getElementById("search-sort-order");
 const searchResultsPanel = document.getElementById("search-results-panel");
 const searchResultsList = document.getElementById("search-results-list");
 
+/**
+ * Returns the current position of the center of the map.
+ *
+ * @returns {lon, lat}
+ */
 function getSearchLonLat() {
   const map = window.appMap;
   if (map && typeof map.getCenter === "function") {
@@ -21,18 +26,24 @@ function getSearchLonLat() {
   return { lon: COOLSPOT_DEFAULT_LNG, lat: COOLSPOT_DEFAULT_LAT };
 }
 
+/**
+ * Returns the value to be sorted by and the order to be sorted by
+ *
+ * @returns {sort, order}
+ */
 function getSortParams() {
-  const sort =
-    searchSortBy && searchSortBy.value
-      ? searchSortBy.value
-      : "type";
+  const sort = searchSortBy && searchSortBy.value ? searchSortBy.value : "type";
   const order =
-    searchSortOrder && searchSortOrder.value
-      ? searchSortOrder.value
-      : "asc";
+    searchSortOrder && searchSortOrder.value ? searchSortOrder.value : "asc";
   return { sort, order };
 }
 
+/**
+ * Creates and returns the url to be sent to the api to search map items.
+ *
+ * @param {*} query, String input from the user
+ * @returns url to request search results from database
+ */
 function buildSearchMapUrl(query) {
   const params = new URLSearchParams();
   params.set("q", query);
@@ -45,8 +56,15 @@ function buildSearchMapUrl(query) {
   return `/api/search/map?${params.toString()}`;
 }
 
+/**
+ * Toggles the visibility of the search results panel.
+ *
+ * @param {Boolean} visible current visibility of the search panel
+ * @returns null
+ */
 function setSearchPanelVisible(visible) {
   if (!searchResultsPanel) {
+    console.error("No search results panel found");
     return;
   }
   if (visible) {
@@ -60,6 +78,11 @@ function setSearchPanelVisible(visible) {
   }
 }
 
+/**
+ * Returns true if the search panel is visible.
+ *
+ * @returns null if no search results panel, true if panel visible
+ */
 function isSearchPanelOpen() {
   if (!searchResultsPanel) {
     return false;
@@ -70,6 +93,9 @@ function isSearchPanelOpen() {
   return !searchResultsPanel.classList.contains("hidden");
 }
 
+/**
+ * Sets search results panel to not be visible and clears its contents.
+ */
 function closeSearchPanel() {
   if (searchResultsList) {
     searchResultsList.innerHTML = "";
@@ -77,6 +103,12 @@ function closeSearchPanel() {
   setSearchPanelVisible(false);
 }
 
+/**
+ * Returns true if target is within the screen space bounds of the search results panel.
+ *
+ * @param {PointerEvent.target} target
+ * @returns true if within bounds of search results panel
+ */
 function isClickInsideSearchUi(target) {
   if (!target || !(target instanceof Node)) {
     return false;
@@ -93,6 +125,11 @@ function isClickInsideSearchUi(target) {
   return false;
 }
 
+/**
+ * Adds results of searching for user input to search results and displays them.
+ *
+ * @returns null if no searchField, searchResultsList or userInput.
+ */
 async function searchMap() {
   if (!searchField || !searchResultsList) {
     return;
@@ -147,6 +184,11 @@ if (searchField) {
   });
 }
 
+/**
+ * Searches database again when sort preference changes
+ *
+ * @returns null if no searchField or no user input
+ */
 function onSortControlChange() {
   if (!searchField) {
     return;
@@ -175,6 +217,14 @@ document.addEventListener("click", (e) => {
   closeSearchPanel();
 });
 
+/**
+ * Handles activation of a search result row from a click or keyboard event.
+ * Closes the search panel and opens the map item drawer, unless an in-row link was activated.
+ *
+ * @param {*} row search result row element with data-map-item-id
+ * @param {*} e click or keyboard event on the row
+ * @returns null if the row has no map item id or an in-row link was activated
+ */
 async function activateSearchResultRow(row, e) {
   const id = row.getAttribute("data-map-item-id");
   if (!id) {

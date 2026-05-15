@@ -6,10 +6,9 @@ const LOGIN_LABEL = "Login to see location crowding";
 const LOGGED_IN_LABEL = "Go Here";
 
 /**
- * Reads a Supabase access token if the app (or Supabase JS) stored one in localStorage.
- * Login flow can set localStorage.setItem("coolspot_access_token", session.access_token).
- * Otherwise keys like sb-<project-ref>-auth-token (JSON with access_token) are detected.
- * @returns {string|null}
+ * Reads a Supabase access token from localStorage if the user is logged in.
+ *
+ * @returns access token string, or null if none is stored
  */
 function getAccessToken() {
   const explicit = localStorage.getItem("coolspot_access_token");
@@ -34,6 +33,11 @@ function getAccessToken() {
   return null;
 }
 
+/**
+ * Sets the current location button label based on whether the user is logged in.
+ *
+ * @returns null if no current location button element
+ */
 function syncButtonLabel() {
   if (!currentLocationButton) {
     return;
@@ -45,6 +49,61 @@ function syncButtonLabel() {
   }
 }
 
+/**
+ * Records the user's presence at the open map item or sends them to login.
+ *
+ * @returns null if not logged in, no map item is open, or the request fails with 401
+ */
+async function onCurrentLocationButtonClick() {
+  const token = getAccessToken();
+  if (!token) {
+    window.location.href = "/login";
+    return;
+  }
+
+  const mapItemId = window.currentOpenMapItemId;
+  if (!mapItemId) {
+    window.alert(
+      "This location is not linked to a map item in the app. Open a cooling centre or pick a location from search.",
+    );
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/current-location", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ map_item_id: mapItemId }),
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem("coolspot_access_token");
+      window.location.href = "/login";
+      return;
+    }
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || res.statusText);
+    }
+
+    if (typeof window.refreshDrawerCrowding === "function") {
+      window.refreshDrawerCrowding(mapItemId);
+    }
+  } catch (err) {
+    console.error("current-location:", err);
+    window.alert(err.message || "Could not save your location.");
+  }
+}
+
+/**
+ * Wires up the current location button label sync and click handler.
+ *
+ * @returns null if no current location button element
+ */
 function initCurrentLocationButton() {
   if (!currentLocationButton) {
     return;
@@ -54,50 +113,7 @@ function initCurrentLocationButton() {
   window.addEventListener("storage", syncButtonLabel);
   window.addEventListener("focus", syncButtonLabel);
 
-  currentLocationButton.addEventListener("click", async () => {
-    const token = getAccessToken();
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
-
-    const mapItemId = window.currentOpenMapItemId;
-    if (!mapItemId) {
-      window.alert(
-        "This location is not linked to a map item in the app. Open a cooling centre or pick a location from search.",
-      );
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/current-location", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ map_item_id: mapItemId }),
-      });
-
-      if (res.status === 401) {
-        localStorage.removeItem("coolspot_access_token");
-        window.location.href = "/login";
-        return;
-      }
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || res.statusText);
-      }
-
-      if (typeof window.refreshDrawerCrowding === "function") {
-        window.refreshDrawerCrowding(mapItemId);
-      }
-    } catch (err) {
-      console.error("current-location:", err);
-      window.alert(err.message || "Could not save your location.");
-    }
-  });
+  currentLocationButton.addEventListener("click", onCurrentLocationButtonClick);
 }
 
 initCurrentLocationButton();
