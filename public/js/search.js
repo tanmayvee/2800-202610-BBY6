@@ -1,8 +1,49 @@
+const COOLSPOT_DEFAULT_LNG = -123.1207;
+const COOLSPOT_DEFAULT_LAT = 49.2827;
+
 const searchField = document.getElementById("map-search");
 const searchButton = document.getElementById("map-search-button");
+const mapSearchUi = document.getElementById("map-search-ui");
 const mapSearchBar = document.getElementById("map-search-bar");
+const searchSortBy = document.getElementById("search-sort-by");
+const searchSortOrder = document.getElementById("search-sort-order");
 const searchResultsPanel = document.getElementById("search-results-panel");
 const searchResultsList = document.getElementById("search-results-list");
+
+function getSearchLonLat() {
+  const map = window.appMap;
+  if (map && typeof map.getCenter === "function") {
+    const c = map.getCenter();
+    if (c && Number.isFinite(c.lng) && Number.isFinite(c.lat)) {
+      return { lon: c.lng, lat: c.lat };
+    }
+  }
+  return { lon: COOLSPOT_DEFAULT_LNG, lat: COOLSPOT_DEFAULT_LAT };
+}
+
+function getSortParams() {
+  const sort =
+    searchSortBy && searchSortBy.value
+      ? searchSortBy.value
+      : "type";
+  const order =
+    searchSortOrder && searchSortOrder.value
+      ? searchSortOrder.value
+      : "asc";
+  return { sort, order };
+}
+
+function buildSearchMapUrl(query) {
+  const params = new URLSearchParams();
+  params.set("q", query);
+  const { sort, order } = getSortParams();
+  params.set("sort", sort);
+  params.set("order", order);
+  const { lon, lat } = getSearchLonLat();
+  params.set("lon", String(lon));
+  params.set("lat", String(lat));
+  return `/api/search/map?${params.toString()}`;
+}
 
 function setSearchPanelVisible(visible) {
   if (!searchResultsPanel) {
@@ -40,6 +81,9 @@ function isClickInsideSearchUi(target) {
   if (!target || !(target instanceof Node)) {
     return false;
   }
+  if (mapSearchUi && mapSearchUi.contains(target)) {
+    return true;
+  }
   if (searchResultsPanel && searchResultsPanel.contains(target)) {
     return true;
   }
@@ -62,7 +106,7 @@ async function searchMap() {
   }
 
   try {
-    const url = `/api/search/map?q=${encodeURIComponent(userInput)}`;
+    const url = buildSearchMapUrl(userInput);
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -103,6 +147,24 @@ if (searchField) {
   });
 }
 
+function onSortControlChange() {
+  if (!searchField) {
+    return;
+  }
+  if (searchField.value.trim() === "") {
+    return;
+  }
+  searchMap();
+}
+
+if (searchSortBy) {
+  searchSortBy.addEventListener("change", onSortControlChange);
+}
+
+if (searchSortOrder) {
+  searchSortOrder.addEventListener("change", onSortControlChange);
+}
+
 document.addEventListener("click", (e) => {
   if (!isSearchPanelOpen()) {
     return;
@@ -113,24 +175,13 @@ document.addEventListener("click", (e) => {
   closeSearchPanel();
 });
 
-function eventTargetElement(target) {
-  if (target instanceof Element) {
-    return target;
-  }
-  if (target && target.parentElement) {
-    return target.parentElement;
-  }
-  return null;
-}
-
 async function activateSearchResultRow(row, e) {
   const id = row.getAttribute("data-map-item-id");
   if (!id) {
     return;
   }
-  const t = eventTargetElement(e.target);
-  const visitLink = t && t.closest("a.search-result-visit[href]");
-  if (visitLink && row.contains(visitLink)) {
+  const link = e.target.closest("a[href]");
+  if (link && row.contains(link)) {
     setTimeout(() => closeSearchPanel(), 0);
     return;
   }
@@ -145,8 +196,7 @@ async function activateSearchResultRow(row, e) {
 
 if (searchResultsList) {
   searchResultsList.addEventListener("click", (e) => {
-    const t = eventTargetElement(e.target);
-    const row = t && t.closest("[data-map-item-id]");
+    const row = e.target.closest("[data-map-item-id]");
     if (!row || !searchResultsList.contains(row)) {
       return;
     }
@@ -157,11 +207,10 @@ if (searchResultsList) {
     if (e.key !== "Enter" && e.key !== " ") {
       return;
     }
-    const keyTarget = eventTargetElement(e.target);
-    if (keyTarget && keyTarget.closest("a.search-result-visit[href]")) {
+    if (e.target.closest("a[href]")) {
       return;
     }
-    const row = keyTarget && keyTarget.closest("[data-map-item-id]");
+    const row = e.target.closest("[data-map-item-id]");
     if (!row || !searchResultsList.contains(row)) {
       return;
     }

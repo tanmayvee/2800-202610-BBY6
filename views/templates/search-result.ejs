@@ -6,8 +6,6 @@
   <h3 class="text-base font-semibold leading-snug text-gray-900"><%= item_name %></h3>
   <div class="mt-1 flex flex-row flex-wrap items-center gap-x-4 gap-y-0.5 text-sm text-gray-600">
     <span class="min-w-0 truncate"><%= item_type %></span>
-    <% if (typeof visit_site_url === "string" && visit_site_url.length > 0) { %>
-    <a class="search-result-visit min-w-0 truncate text-blue-600 underline hover:text-blue-800" href="<%= visit_site_url %>" target="_blank" rel="noopener noreferrer">Visit Site</a>
-    <% } %>
+    <a class="min-w-0 truncate text-blue-600 underline hover:text-blue-800" href="<%= item_link %>">Visit Site</a>
   </div>
 </li>
