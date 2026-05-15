@@ -1,6 +1,7 @@
 // Global state for chat
 let currentLocationName = "";
 let currentLocationContext = "";
+let currentChatHistory = [];
 let chatIsLoading = false;
 
 function openChat(locationName, locationContext = "") {
@@ -10,6 +11,7 @@ function openChat(locationName, locationContext = "") {
 
   currentLocationName = locationName;
   currentLocationContext = locationContext;
+  currentChatHistory = [];
   chatIsLoading = false;
 
   // Clear previous messages
@@ -82,6 +84,14 @@ async function sendChatMessage() {
   errorEl.classList.add("hidden");
 
   try {
+    const updatedHistory = [
+      ...currentChatHistory,
+      {
+        role: "user",
+        text: message,
+      },
+    ];
+
     const response = await fetch("/api/gemini/chat", {
       method: "POST",
       headers: {
@@ -89,6 +99,7 @@ async function sendChatMessage() {
       },
       body: JSON.stringify({
         message,
+        history: currentChatHistory,
         locationName: currentLocationName,
         locationContext: currentLocationContext,
       }),
@@ -104,7 +115,18 @@ async function sendChatMessage() {
       throw new Error(data.error);
     }
 
-    // Add bot response
+    // Add bot response and preserve conversation history
+    currentChatHistory = [
+      ...currentChatHistory,
+      {
+        role: "user",
+        text: message,
+      },
+      {
+        role: "model",
+        text: data.response,
+      },
+    ];
     addChatMessage(data.response, "bot");
   } catch (error) {
     console.error("Chat error:", error);
