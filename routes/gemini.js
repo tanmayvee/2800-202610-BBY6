@@ -14,7 +14,7 @@ router.post("/chat", async (req, res) => {
       });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const systemPrompt = `You are a helpful assistant for a heat relief app called CoolSpot that helps citizens of Vancouver find parks, shaded areas, and cooling centres. 
 ${locationName ? `The user is asking about: ${locationName}` : ""}
