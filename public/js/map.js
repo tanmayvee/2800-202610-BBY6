@@ -1,3 +1,13 @@
+import {
+  loadLocalStorage,
+  saveToLocalStorage,
+  getLocalData,
+  toggleTheme,
+} from "/js/utils.js";
+
+loadLocalStorage();
+toggleTheme();
+
 const VANCOUVER_LAT = 49.2827;
 const VANCOUVER_LNG = -123.1207;
 
@@ -121,6 +131,11 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
       isFilterClicked = true;
       document.getElementById("filter-drawer").classList.toggle("open");
     });
+
+    const mapCreditsBtn = document.querySelector(
+      `div[class*="maplibregl-ctrl-bottom-right"`,
+    );
+    mapCreditsBtn.remove();
 
     // ------------------------------------------------------------
     // Filtering
@@ -317,8 +332,8 @@ async function addCoolingCentresLayer(map) {
         `<ul>
           <li>${props.address}</li>
           <li>${props.type}</li>
-          <li>${props.hours || 'Hours unavailable'}</li>
-          <li>${props.description || ''}</li>
+          <li>${props.hours || "Hours unavailable"}</li>
+          <li>${props.description || ""}</li>
         </ul>`,
       );
     });

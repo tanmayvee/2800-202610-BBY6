@@ -1,13 +1,58 @@
-<!DOCTYPE html> 
-<%- include("./tutorial.ejs", {showTutorial: showTutorial})%>
-this is what the app looks like. ship it.
-<br/>
-<!-- using anchor elements cuz it's simpler than buttons with onclick, 
- we can style them like buttons n stuff-->
- <a href="/signup">sign up</a> <br/>
- <a href="/login">log in</a> <br/>
- TESTING STUFF <br/>
-<a href="/api/parks">parks</a> <br/>
-<a href="/api/uv">uv</a> <br/>
-<a href="/api/cooling-centres">cooling centres</a> <br/>
-<a href="/api/crowd">crowd</a> <br/>
+  <%- include('templates/header', { cssFiles: cssFiles }) %>
+    <header>
+      <div class="logo">
+        <img src="/img/logo.svg"/>
+        <h2>CoolSpot</h2>
+      </div>
+      <div class="nav">
+        <a class="nav-btn register" href="/signup">Register</a>
+        <a class="nav-btn login" href="/login">Sign In</a>
+      </div>
+    </header>
+    <main class="container">
+      <div class="wrapper">
+        <div class="logo">
+          <div class="logo-wrapper">
+            <img src="/img/logo-outline.svg"/>
+            <h2>CoolSpot</h2>
+          </div>
+        </div>
+        <div class="dialog">
+          <h3 class="caption">Beat the heat, find your shade</h3>
+          <p class="description">
+            CoolSpot helps Vancouver residents navigate extreme summer heat by mapping nearby parks,
+            cooling centres, and shaded walking routes in real time. Combined with live UV risk tracking,
+            it is your go-to mobile companion to plan safe outdoor routes, discover immediate heat relief,
+            and protect your health on the go.
+          </p>
+        </div>
+        <div class="navigation">
+          <a class="nav-btn register" href="/signup">Register</a>
+          <a class="nav-btn login" href="/login">Sign In</a>
+        </div>
+      </div>
+    </main>
+    <main class="container">
+      <div class="wrapper">
+        <div class="logo">
+          <div class="logo-wrapper">
+            <h2>Meet the Team</h2>
+          </div>
+        </div>
+        <div class="dialog">
+          <p class="description">
+            CoolSpot was developed by a small team in BCIT
+          </p>
+          <br>
+          <ul>
+            <li>Julia Ziebart</li>
+            <li>Mayvee Tan</li>
+            <li>Quinn Callander</li>
+            <li>Vicente Goncalves</li>
+            <li>Brihad Sidda</li>
+            <li>Ivan Somera</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+<%- include('templates/footer', { jsFiles: jsFiles }) %>
