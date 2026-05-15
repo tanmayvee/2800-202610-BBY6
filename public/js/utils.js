@@ -25,11 +25,13 @@ const toggleTheme = function (opt_extraStyles) {
     bodyStyle.setProperty("--theme", "#000");
     bodyStyle.setProperty("--theme-filter", "invert(1)");
     bodyStyle.setProperty("--theme-text", "#fff");
+    bodyStyle.setProperty("--theme-light", "#1f1f1f");
     bodyStyle.setProperty("--theme-text-dark", "#dadada");
   } else {
     bodyStyle.setProperty("--theme", "#fff");
     bodyStyle.setProperty("--theme-filter", "invert(0)");
     bodyStyle.setProperty("--theme-text", "#000");
+    bodyStyle.setProperty("--theme-light", "#f4feff");
     bodyStyle.setProperty("--theme-text-dark", "darkslategray");
   }
 

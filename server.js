@@ -44,8 +44,11 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/homepage", (req, res) => {
-  res.render("homepage");
+app.get("/home", (req, res) => {
+  res.render("homepage", {
+    cssFiles: ["home.css"],
+    jsFiles: ["home.js"],
+  });
 });
 
 app.get("/login", (req, res) => {
@@ -62,6 +65,13 @@ app.get("/crowds", (req, res) => {
 
 app.get("/locations", (req, res) => {
   res.render("locations");
+});
+
+app.get("/settings", (req, res) => {
+  res.render("usersettings", {
+    cssFiles: ["usersettings.css"],
+    jsFiles: ["settings.js", "main.js"],
+  });
 });
 
 // Location detail - fetches location from database before rendering
@@ -120,11 +130,8 @@ app.get("/location/:id", async (req, res) => {
   }
 });
 
-app.get("/usersettings", (req, res) => {
-  res.render("usersettings", {
-    cssFiles: ["usersettings.css"],
-    jsFiles: ["settings.js", "main.js"],
-  });
+app.get("/logout", (req, res) => {
+  res.redirect("/home");
 });
 
 app.listen(PORT, () => {

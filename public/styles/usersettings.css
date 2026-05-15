@@ -42,6 +42,7 @@ a.home-page-btn {
   filter: invert(1);
   transform: scale(-1, 1);
   position: absolute;
+  z-index: 9999;
   margin-left: 15px;
 }
 a.home-page-btn img {
@@ -57,13 +58,14 @@ main.container {
   display: flex;
   justify-content: center;
   width: 100vw;
+  max-width: unset;
 }
 
 div.wrapper {
   box-shadow: gray 0 4px 20px;
   border-radius: 15px;
-  margin-top: 3%;
-  padding: 2% 4%;
+  margin-top: 40pt;
+  padding: 25px 50px;
   background: var(--theme);
   display: grid;
   grid-gap: 10px;
@@ -82,7 +84,7 @@ div.wrapper v-input .input {
   box-shadow: gray 0 0px 5px;
   padding: 10px;
   border-radius: 5px;
-  background: var(--theme);
+  background: var(--theme-light);
   margin-top: 7px;
   width: 100%;
   transition: all 200ms ease-in-out;
