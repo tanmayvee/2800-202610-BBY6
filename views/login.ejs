@@ -1,7 +1,125 @@
-<!DOCTYPE html>
-<form>
-  Log in:<br/>
-  <input type="text" placeholder="email" name="email" /><br/>
-  <input type="password" placeholder="password" name="password" /><br/>
-  <button type="submit" method="post" action="/loggingin">Submit</button>
-</form>
+<%- include('./templates/header') %>
+<link rel="stylesheet" href="/styles/style.css" />
+<link rel="stylesheet" href="/styles/auth.css" />
+<title>Login | CoolSpot</title>
+
+<div class="auth-container">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <img src="/img/logo.svg" alt="CoolSpot logo" class="auth-logo" />
+      <h1>Welcome back</h1>
+      <p>Sign in to your CoolSpot account</p>
+    </div>
+
+    <div id="alert" class="alert hidden"></div>
+
+    <form id="loginForm" novalidate>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="you@example.com"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Your password"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn-primary">Sign in</button>
+
+    </form>
+
+    <p class="auth-footer">
+      Don't have an account? <a href="/signup">Sign up</a>
+    </p>
+
+  </div>
+</div>
+
+<script>
+  //Redirect if already logged in
+  if (localStorage.getItem("sb-token")) 
+  {
+    window.location.href = "/";
+  }
+
+  const form = document.getElementById("loginForm");
+  const alertBox = document.getElementById("alert");
+  const submitBtn = document.getElementById("submitBtn");
+
+  function showAlert(message, type) 
+  {
+    alertBox.textContent = message;
+    alertBox.className = "alert " + type;
+  }
+
+  function setLoading(isLoading) 
+  {
+    submitBtn.disabled = isLoading;
+    submitBtn.textContent = isLoading ? "Signing in..." : "Sign in";
+  }
+
+  form.addEventListener("submit", async (e) => 
+  {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) 
+    {
+      showAlert("Please fill in all fields.", "alert-error");
+      return;
+    }
+
+    setLoading(true);
+
+    try 
+    {
+      const res = await fetch("/api/auth/login", 
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) 
+      {
+        showAlert(data.error || "Login failed. Please try again.", "alert-error");
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("sb-token", data.session.access_token);
+      localStorage.setItem("sb-refresh", data.session.refresh_token);
+
+      window.location.href = "/";
+
+    } catch (err) 
+      {
+      console.error("Login error:", err);
+      showAlert("Something went wrong. Please try again.", "alert-error");
+      setLoading(false);
+      }
+  });
+</script>
+
+</body>
+</html>

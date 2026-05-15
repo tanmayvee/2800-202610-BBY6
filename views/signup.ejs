@@ -1,8 +1,144 @@
-<!DOCTYPE html>
-<form>
-  Sign up:<br/>
-  <input type="text" placeholder="username" name="username" /> <br/>
-  <input type="text" placeholder="email" name="email" /> <br/>
-  <input type="password" placeholder="password" name="password" /> <br/>
-  <button type="submit" method="post" action="/createuser">Submit</button>
-</form>
+<%- include('./templates/header') %>
+<title>Sign Up | CoolSpot</title>
+
+<div class="auth-container">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <img src="/img/logo.svg" alt="CoolSpot logo" class="auth-logo" />
+      <h1>Create account</h1>
+      <p>Start finding cool spots near you</p>
+    </div>
+
+    <div id="alert" class="alert hidden"></div>
+
+    <form id="signupForm" novalidate>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="you@example.com"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Min. 8 characters"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="confirm">Confirm password</label>
+        <input
+          type="password"
+          id="confirm"
+          name="confirm"
+          placeholder="Repeat your password"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn-primary">Create account</button>
+
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a href="/login">Sign in</a>
+    </p>
+
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById("signupForm");
+  const alertBox = document.getElementById("alert");
+  const submitBtn = document.getElementById("submitBtn");
+
+  function showAlert(message, type) 
+  {
+    alertBox.textContent = message;
+    alertBox.className = "alert " + type;
+  }
+
+  function setLoading(isLoading) 
+  {
+    submitBtn.disabled = isLoading;
+    submitBtn.textContent = isLoading ? "Creating account..." : "Create account";
+  }
+
+  form.addEventListener("submit", async (e) => 
+  {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirm = document.getElementById("confirm").value;
+
+    if (!email || !password || !confirm) 
+    {
+      showAlert("Please fill in all fields.", "alert-error");
+      return;
+    }
+
+    if (password.length < 8) 
+    {
+      showAlert("Password must be at least 8 characters.", "alert-error");
+      return;
+    }
+
+    if (password !== confirm) 
+    {
+      showAlert("Passwords do not match.", "alert-error");
+      return;
+    }
+
+    setLoading(true);
+
+    try 
+    {
+      const res = await fetch("/api/auth/signup", 
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) 
+      {
+        showAlert(data.error || "Signup failed. Please try again.", "alert-error");
+        setLoading(false);
+        return;
+      }
+
+      showAlert
+      (
+        "Account created! Check your email to confirm before signing in.",
+        "alert-success"
+      );
+      submitBtn.textContent = "Done";
+
+    } catch (err) 
+      {
+      console.error("Signup error:", err);
+      showAlert("Something went wrong. Please try again.", "alert-error");
+      setLoading(false);
+      }
+  });
+</script>
+
+</body>
+</html>

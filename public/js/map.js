@@ -2,6 +2,8 @@ const VANCOUVER_LAT = 49.2827;
 const VANCOUVER_LNG = -123.1207;
 
 let isClicked = false;
+let isFilterClicked = false;
+let isInfoClicked = false;
 
 const drawer = document.getElementById("drawer");
 const drawerTitle = document.getElementById("drawer-title");
@@ -57,8 +59,16 @@ window.refreshDrawerCrowding = refreshDrawerCrowding;
  * @param {string} title
  * @param {string} content
  * @param {string|number|null|undefined} mapItemId Database map_item_id when known (cooling centres, search).
+ * @param {string} [locationName] When set, adds a Gemini chat shortcut for this place.
+ * @param {string} [locationContext] Extra context passed to chat.
  */
-function openDrawer(title, content, mapItemId = null) {
+function openDrawer(
+  title,
+  content,
+  mapItemId = null,
+  locationName = "",
+  locationContext = "",
+) {
   window.currentOpenMapItemId = null;
   resetDrawerCrowding();
   drawer.classList.remove("open");
@@ -72,6 +82,27 @@ function openDrawer(title, content, mapItemId = null) {
         : null;
     window.currentOpenMapItemId = idStr;
     refreshDrawerCrowding(idStr);
+
+    if (locationName) {
+      const buttonContainer = drawer.querySelector(".flex.flex-col.gap-2");
+      if (buttonContainer) {
+        const prevChat = buttonContainer.querySelector("[data-drawer-chat]");
+        if (prevChat) {
+          prevChat.remove();
+        }
+        const chatBtn = document.createElement("button");
+        chatBtn.setAttribute("data-drawer-chat", "true");
+        chatBtn.className =
+          "bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 font-semibold";
+        chatBtn.textContent = "Chat about this location";
+        chatBtn.onclick = () => {
+          if (typeof window.openChat === "function") {
+            window.openChat(locationName, locationContext);
+          }
+        };
+        buttonContainer.insertBefore(chatBtn, buttonContainer.firstChild);
+      }
+    }
   }, 300);
 }
 
@@ -126,7 +157,20 @@ async function openDrawerForMapItem(mapItemId) {
       content = `<p class="text-sm text-gray-600">Details for this location are limited.</p>`;
     }
 
-    openDrawer(title, content, mapItemId);
+    let chatName = "";
+    let chatContext = "";
+    if (parkName !== "") {
+      chatName = parkName;
+      chatContext =
+        loc.neighbourhood_name != null ? String(loc.neighbourhood_name) : "";
+    } else if (loc.name != null && loc.address != null) {
+      chatName = String(loc.name);
+      chatContext = `${loc.address} ${loc.type || ""}`;
+    } else {
+      chatName = loc.name != null ? String(loc.name) : parkName;
+    }
+
+    openDrawer(title, content, mapItemId, chatName, chatContext);
 
     const map = window.appMap;
     if (!map) {
@@ -192,12 +236,39 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
     const uvLng = appState.userLngLat ? appState.userLngLat[0] : VANCOUVER_LNG;
     await updateMapUv(uvLat, uvLng, map);
 
+    // toggle info popup when info button is clicked
+    document.getElementById("info-btn").addEventListener("click", () => {
+      isInfoClicked = true;
+      const popup = document.getElementById("info-popup");
+      const img = document.querySelector("#info-btn img");
+
+      popup.classList.toggle("open");
+      const isOpen = popup.classList.contains("open");
+      img.src = isOpen ? "/img/exit.svg" : "/img/info.svg";
+    });
+
+    // close info popup when clicking outside
+    document.addEventListener("click", (e) => {
+      const infoBtn = document.getElementById("info-btn");
+      const infoPopup = document.getElementById("info-popup");
+
+      if (!infoBtn.contains(e.target) && !infoPopup.contains(e.target)) {
+        infoPopup.classList.remove("open");
+        document.querySelector("#info-btn img").src = "/img/info.svg";
+      }
+    });
+
     // Clicking outside of drawer or clicking a marker/shaded area closes it
     map.on("click", (e) => {
       if (!isClicked) {
         closeDrawer();
       }
+      document.getElementById("filter-drawer").classList.remove("open");
+      document.getElementById("info-popup").classList.remove("open");
+      document.querySelector("#info-btn img").src = "/img/info.svg";
       isClicked = false;
+      isFilterClicked = false;
+      isInfoClicked = false;
     });
 
     // Close button
@@ -229,6 +300,50 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
     geolocate.trigger();
 
     console.log("Map loaded!");
+
+    document.getElementById("filter-btn").addEventListener("click", () => {
+      isFilterClicked = true;
+      document.getElementById("filter-drawer").classList.toggle("open");
+    });
+
+    // ------------------------------------------------------------
+    // Filtering
+    // ------------------------------------------------------------
+
+    const navFilter = document.getElementById("nav-filter");
+    const clearBtn = document.getElementById("clear-filters");
+
+    function updateLayers() {
+      const showParks = document.getElementById("parks").checked;
+      const showCentres = document.getElementById("cooling-centres").checked;
+      const showAll = !showParks && !showCentres;
+
+      map.setLayoutProperty(
+        "parks-fill",
+        "visibility",
+        showParks || showAll ? "visible" : "none",
+      );
+      map.setLayoutProperty(
+        "parks-outline",
+        "visibility",
+        showParks || showAll ? "visible" : "none",
+      );
+      map.setLayoutProperty(
+        "cooling-centres-layer",
+        "visibility",
+        showCentres || showAll ? "visible" : "none",
+      );
+
+      clearBtn.classList.toggle("hidden", showAll);
+    }
+
+    navFilter.addEventListener("change", updateLayers);
+
+    clearBtn.addEventListener("click", () => {
+      document.getElementById("parks").checked = false;
+      document.getElementById("cooling-centres").checked = false;
+      updateLayers();
+    });
   });
 }
 
@@ -308,7 +423,7 @@ async function addParksLayer(map) {
         }
       }
 
-      openDrawer(titleRaw, parkLink, mapItemId);
+      openDrawer(titleRaw, parkLink, mapItemId, titleRaw, "");
     });
 
     // Pointer cursor on hover
@@ -335,7 +450,7 @@ async function addCoolingCentresLayer(map) {
       fetch(`/api/cooling-centres/location/${c.map_item_id}`)
         .then((r) => r.json())
         .then((coords) => ({ centre: c, coords }))
-        .catch(() => ({ centre: c, coords: null }))
+        .catch(() => ({ centre: c, coords: null })),
     );
 
     const results = await Promise.all(coordPromises);
@@ -353,6 +468,8 @@ async function addCoolingCentresLayer(map) {
           name: r.centre.name,
           address: r.centre.address,
           type: r.centre.type,
+          hours: r.centre.hours,
+          description: r.centre.description,
         },
       }));
 
@@ -404,13 +521,18 @@ async function addCoolingCentresLayer(map) {
     map.on("click", "cooling-centres-layer", (e) => {
       isClicked = true;
       const props = e.features[0].properties;
+      const context = `Address: ${props.address}, Type: ${props.type}`;
       openDrawer(
         props.name,
         `<ul>
-          <li>${props.address}</li>
-          <li>${props.type}</li>
+          <li>${escapeHtml(String(props.address))}</li>
+          <li>${escapeHtml(String(props.type))}</li>
+          <li>${escapeHtml(props.hours != null ? String(props.hours) : "Hours unavailable")}</li>
+          <li>${escapeHtml(props.description != null ? String(props.description) : "")}</li>
         </ul>`,
         props.map_item_id,
+        props.name,
+        context,
       );
     });
 

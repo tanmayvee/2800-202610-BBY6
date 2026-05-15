@@ -3,12 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- ADD CSS HERE -->
+    <!-- CSS -->
+    <link href="/styles/output.css" rel="stylesheet" />
+    <link href="/styles/common.css" rel="stylesheet" />
+    <% for(let sheet of cssFiles) { %>
+        <link rel="stylesheet" href="/styles/<%= sheet %>">
+    <% } %>
+    <link
+      href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
     <link rel="icon" href="/img/logo.svg" type="image/svg" />
     <title>CoolSpot</title>
     <!-- Load Scripts and Components -->
-    <link rel="stylesheet" href="/client/src/components/switch-style.css" />
-    <script defer src="/client/src/components/switch.js"></script>
-    <script defer src="/client/src/components/input.js"></script>
+    <link rel="stylesheet" href="/components/switch-style.css" />
+    <script defer src="/components/switch.js"></script>
+    <script defer src="/components/input.js"></script>
   </head>
-  <body>
+  <body> 

@@ -1,0 +1,44 @@
+      <!-- Search bar, sort controls, and results -->
+      <div id="map-search-ui"
+        class="fixed top-4 left-1/2 z-[1100] flex w-[min(100%,36rem)] max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-col gap-2 pointer-events-auto">
+        <div id="map-search-bar"
+          class="flex w-full flex-wrap items-stretch gap-0 rounded-lg border border-gray-200 bg-white/95 shadow-lg backdrop-blur-sm"
+          role="search" aria-label="Map search">
+          <input id="map-search" type="search" name="q" placeholder="Search…" autocomplete="off"
+            class="min-w-0 flex-1 basis-[min(100%,12rem)] rounded-l-lg border-0 bg-transparent px-4 py-2.5 text-gray-900 placeholder:text-gray-500 outline-none ring-0 focus:ring-2 focus:ring-inset focus:ring-blue-500" />
+          <button id="map-search-button" type="button"
+            class="shrink-0 border-l border-gray-200 bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:px-4">
+            Search
+          </button>
+          <label class="flex min-w-0 shrink-0 flex-col justify-center gap-0.5 border-l border-gray-200 bg-white/95 px-2 py-1.5 text-xs font-medium text-gray-600">
+            Sort by
+            <select id="search-sort-by"
+              class="max-w-[11rem] rounded border border-gray-200 bg-white px-1.5 py-1 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="type">Type</option>
+              <option value="distance">Distance</option>
+              <option value="crowding">Crowding</option>
+            </select>
+          </label>
+          <label
+            class="flex min-w-0 shrink-0 flex-col justify-center gap-0.5 rounded-r-lg border-l border-gray-200 bg-white/95 px-2 py-1.5 text-xs font-medium text-gray-600">
+            Order
+            <select id="search-sort-order"
+              class="w-full min-w-[6.5rem] rounded border border-gray-200 bg-white px-1.5 py-1 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Hidden by default -->
+        <div id="search-results-panel"
+          class="hidden w-full rounded-lg border border-gray-200 bg-white/95 shadow-lg backdrop-blur-sm"
+          role="region" aria-label="Search results" aria-hidden="true">
+          <ul id="search-results-list"
+            class="list-none m-0 max-h-[min(50vh,20rem)] overflow-y-auto overscroll-contain rounded-lg px-2 py-1">
+            <% (typeof searchResults !== 'undefined' && Array.isArray(searchResults) ? searchResults : []).forEach(function (row) { %>
+              <%- include("./search-result.ejs", row) %>
+            <% }); %>
+          </ul>
+        </div>
+      </div>

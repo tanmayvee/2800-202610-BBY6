@@ -1,38 +1,3 @@
-<style>
-  .popup {
-    position: fixed;
-    background-color: aliceblue;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 15px;
-    width: 25vw;
-    height: 25vh;
-    z-index: 2;
-    text-align: center;
-    align-content: center;
-  }
-
-  .popupBackground {
-    background-color: black;
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    z-index: 1;
-    opacity: 0.2;
-  }
-
-  .popupbutton {
-    background-color: cadetblue;
-    border-radius: 15px;
-    border: 3px;
-    padding-bottom: 5px;
-    padding-top: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-</style>
-
 <% if(showTutorial) { %>
 <div class="popupBackground"></div>
 <div class="popup">
@@ -42,33 +7,6 @@
   <div class="popupText">
     This app helps you find shade in the city.
   </div><br/>
-  <button class="popupbutton" onclick="cyclePopup()">Next</button>
+  <button class="popupbutton">Next</button>
   </div>
 <% } %>
-
-<script>
-  const steps = [
-  { title: 'Parks', text: 'Click the map to explore nearby parks.' },
-  { title: 'UV Index', text: 'See real-time UV levels in your area.' },
-  { title: 'Cooling Centres', text: 'Find air-conditioned spaces near you.' },
-  { title: 'Done!', text: 'You\'re ready to go!' }
-  ];
-
-  let currentSteps = 0;
-
-  function cyclePopup() {
-    currentSteps++;
-
-    if(currentSteps < steps.length) {
-      document.querySelector(".popupHeader").textContent = steps[currentSteps].title;
-      document.querySelector(".popupText").textContent = steps[currentSteps].text;
-    }
-    if(currentSteps == steps.length - 1) {
-      document.querySelector(".popupbutton").textContent = "Close";
-    }
-    if(currentSteps == steps.length) {
-      document.querySelector(".popupBackground").style.display = 'none';
-      document.querySelector(".popup").style.display = 'none';
-    }
-  }
-</script>

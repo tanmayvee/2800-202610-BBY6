@@ -11,6 +11,7 @@ const locationsRouter = require("./routes/locations");
 const userPreferencesRouter = require("./routes/userpreferences");
 const searchRouter = require("./routes/search");
 const currentLocationRouter = require("./routes/currentlocation");
+const geminiRouter = require("./routes/gemini");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,15 +25,16 @@ app.use(express.static("public"));
 
 // API Routes
 // These return JSON data and are called using fetch() inside EJS files
-app.use("/api/auth", authRouter);           // signup, login, logout
-app.use("/api/parks", parksRouter);         // Vancouver park GeoJSON for the map
-app.use("/api/uv", uvRouter);               // UV index and risk level
+app.use("/api/auth", authRouter); // signup, login, logout
+app.use("/api/parks", parksRouter); // Vancouver park GeoJSON for the map
+app.use("/api/uv", uvRouter); // UV index and risk level
 app.use("/api/cooling-centres", coolingRouter); // cooling centre locations
-app.use("/api/crowd", crowdRouter);         // crowd busyness reports
+app.use("/api/crowd", crowdRouter); // crowd busyness reports
 app.use("/api/locations", locationsRouter); // all map items (parks and cooling centres)
 app.use("/api/user-preferences", userPreferencesRouter); // user preferences for notifications, etc.
 app.use("/api/search", searchRouter); // map search (cooling + parks)
 app.use("/api/current-location", currentLocationRouter); // logged-in user at a map item
+app.use("/api/gemini", geminiRouter); // Gemini chat API
 
 // Page Routes
 // These render EJS files from the views/ folder
@@ -40,20 +42,27 @@ app.use("/api/current-location", currentLocationRouter); // logged-in user at a 
 
 // HOME - passes maptilerKey so the map can load
 app.get("/", (req, res) => {
-  res.render("index", { maptilerKey: process.env.MAPTILER_KEY, 
-                        showTutorial: true /*hardcoded for now */});
+  res.render("index", {
+    cssFiles: ["style.css"],
+    jsFiles: ["chat.js", "map.js", "main.js", "tutorial.js", "search.js", "currentlocation.js"],
+    maptilerKey: process.env.MAPTILER_KEY,
+    showTutorial: true /*hardcoded for now */,
+  });
 });
 
-app.get("/homepage", (req, res) => {
-  res.render("homepage");
+app.get("/home", (req, res) => {
+  res.render("homepage", {
+    cssFiles: ["home.css"],
+    jsFiles: ["home.js"],
+  });
 });
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  res.render("login", { cssFiles: ["style.css", "auth.css"] });
 });
 
 app.get("/signup", (req, res) => {
-  res.render("signup");
+  res.render("signup", { cssFiles: ["style.css", "auth.css"] });
 });
 
 app.get("/crowds", (req, res) => {
@@ -64,6 +73,13 @@ app.get("/locations", (req, res) => {
   res.render("locations");
 });
 
+app.get("/settings", (req, res) => {
+  res.render("usersettings", {
+    cssFiles: ["usersettings.css"],
+    jsFiles: ["settings.js", "main.js"],
+  });
+});
+
 // Location detail - fetches location from database before rendering
 // Access in EJS: <%= location.name %>, <%= location.address %>, <%= location.lat %>, <%= location.lon %>
 app.get("/location/:id", async (req, res) => {
@@ -72,8 +88,9 @@ app.get("/location/:id", async (req, res) => {
     const supabase = require("./db/supabase");
 
     // Get coordinates using the database function
-    const { data: coords } = await supabase
-      .rpc("get_map_item_location", { p_map_item_id: parseInt(id) });
+    const { data: coords } = await supabase.rpc("get_map_item_location", {
+      p_map_item_id: parseInt(id),
+    });
 
     // Try cooling centre first
     const { data: coolingData } = await supabase
@@ -119,8 +136,8 @@ app.get("/location/:id", async (req, res) => {
   }
 });
 
-app.get("/usersettings", (req, res) => {
-  res.render("usersettings");
+app.get("/logout", (req, res) => {
+  res.redirect("/home");
 });
 
 app.listen(PORT, () => {
