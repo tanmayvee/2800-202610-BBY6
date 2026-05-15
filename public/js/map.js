@@ -8,30 +8,200 @@ let isInfoClicked = false;
 const drawer = document.getElementById("drawer");
 const drawerTitle = document.getElementById("drawer-title");
 const drawerContent = document.getElementById("drawer-content");
+const drawerCrowdingRow = document.getElementById("drawer-crowding-row");
+const drawerCrowdingCount = document.getElementById("drawer-crowding-count");
 
-function openDrawer(title, content, locationName = "", locationContext = "") {
+function resetDrawerCrowding() {
+  if (drawerCrowdingRow) {
+    drawerCrowdingRow.classList.add("hidden");
+  }
+  if (drawerCrowdingCount) {
+    drawerCrowdingCount.textContent = "—";
+  }
+}
+
+/**
+ * Loads crowding via get_location_crowding (SECURITY DEFINER RPC; param target_map_item_id).
+ * @param {string|null|undefined} mapItemId
+ */
+async function refreshDrawerCrowding(mapItemId) {
+  if (!drawerCrowdingRow || !drawerCrowdingCount) {
+    return;
+  }
+  if (!mapItemId) {
+    resetDrawerCrowding();
+    return;
+  }
+
+  drawerCrowdingRow.classList.remove("hidden");
+  drawerCrowdingCount.textContent = "…";
+
+  try {
+    const res = await fetch(
+      `/api/locations/${encodeURIComponent(mapItemId)}/crowding`,
+    );
+    if (!res.ok) {
+      drawerCrowdingCount.textContent = "?";
+      return;
+    }
+    const body = await res.json();
+    const n = typeof body.count === "number" ? body.count : Number(body.count);
+    drawerCrowdingCount.textContent = Number.isFinite(n) ? String(n) : "0";
+  } catch (err) {
+    console.error("refreshDrawerCrowding:", err);
+    drawerCrowdingCount.textContent = "?";
+  }
+}
+
+window.refreshDrawerCrowding = refreshDrawerCrowding;
+
+/**
+ * @param {string} title
+ * @param {string} content
+ * @param {string|number|null|undefined} mapItemId Database map_item_id when known (cooling centres, search).
+ * @param {string} [locationName] When set, adds a Gemini chat shortcut for this place.
+ * @param {string} [locationContext] Extra context passed to chat.
+ */
+function openDrawer(
+  title,
+  content,
+  mapItemId = null,
+  locationName = "",
+  locationContext = "",
+) {
+  window.currentOpenMapItemId = null;
+  resetDrawerCrowding();
   drawer.classList.remove("open");
   setTimeout(() => {
     drawerTitle.textContent = title;
     drawerContent.innerHTML = content;
     drawer.classList.add("open");
-    
-    // Add chat button if location name is provided
+    const idStr =
+      mapItemId !== null && mapItemId !== undefined && String(mapItemId).trim() !== ""
+        ? String(mapItemId).trim()
+        : null;
+    window.currentOpenMapItemId = idStr;
+    refreshDrawerCrowding(idStr);
+
     if (locationName) {
       const buttonContainer = drawer.querySelector(".flex.flex-col.gap-2");
       if (buttonContainer) {
+        const prevChat = buttonContainer.querySelector("[data-drawer-chat]");
+        if (prevChat) {
+          prevChat.remove();
+        }
         const chatBtn = document.createElement("button");
-        chatBtn.className = "bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 font-semibold";
+        chatBtn.setAttribute("data-drawer-chat", "true");
+        chatBtn.className =
+          "bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 font-semibold";
         chatBtn.textContent = "Chat about this location";
-        chatBtn.onclick = () => openChat(locationName, locationContext);
+        chatBtn.onclick = () => {
+          if (typeof window.openChat === "function") {
+            window.openChat(locationName, locationContext);
+          }
+        };
         buttonContainer.insertBefore(chatBtn, buttonContainer.firstChild);
       }
     }
   }, 300);
 }
 
+function escapeHtml(text) {
+  if (text == null || text === undefined) {
+    return "";
+  }
+  const div = document.createElement("div");
+  div.textContent = String(text);
+  return div.innerHTML;
+}
+
+/**
+ * Fetch a map item by id and open the drawer (used by map clicks and search results).
+ * @param {string} mapItemId
+ */
+async function openDrawerForMapItem(mapItemId) {
+  try {
+    const res = await fetch(`/api/locations/${encodeURIComponent(mapItemId)}`);
+    if (!res.ok) {
+      console.warn("Location not found:", mapItemId);
+      return;
+    }
+    const loc = await res.json();
+
+    let title;
+    let content;
+
+    const parkName = loc.park_name != null ? String(loc.park_name).trim() : "";
+
+    if (parkName !== "") {
+      title = parkName;
+      const neighbourhoodLine = loc.neighbourhood_name
+        ? `<p class="mb-2">${escapeHtml(loc.neighbourhood_name)}</p>`
+        : "";
+      const ha = loc.hectare ?? loc.hectares;
+      const hectaresLine =
+        ha != null ? `<p class="text-sm text-gray-600">${escapeHtml(String(ha))} ha</p>` : "";
+      const nbLink =
+        loc.neighbourhood_url
+          ? `<p class="mt-2"><a href="${escapeHtml(loc.neighbourhood_url)}" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Neighbourhood info</a></p>`
+          : "";
+      content = `${neighbourhoodLine}${hectaresLine}${nbLink}`;
+    } else if (loc.name != null && loc.address != null) {
+      title = loc.name;
+      content = `<ul class="list-disc pl-5 space-y-1">
+          <li>${escapeHtml(loc.address)}</li>
+          <li>${escapeHtml(loc.type)}</li>
+        </ul>`;
+    } else {
+      title = loc.name || loc.park_name || "Location";
+      content = `<p class="text-sm text-gray-600">Details for this location are limited.</p>`;
+    }
+
+    let chatName = "";
+    let chatContext = "";
+    if (parkName !== "") {
+      chatName = parkName;
+      chatContext =
+        loc.neighbourhood_name != null ? String(loc.neighbourhood_name) : "";
+    } else if (loc.name != null && loc.address != null) {
+      chatName = String(loc.name);
+      chatContext = `${loc.address} ${loc.type || ""}`;
+    } else {
+      chatName = loc.name != null ? String(loc.name) : parkName;
+    }
+
+    openDrawer(title, content, mapItemId, chatName, chatContext);
+
+    const map = window.appMap;
+    if (!map) {
+      return;
+    }
+
+    const coordRes = await fetch(
+      `/api/cooling-centres/location/${encodeURIComponent(mapItemId)}`
+    );
+    if (!coordRes.ok) {
+      return;
+    }
+    const coords = await coordRes.json();
+    if (Array.isArray(coords) && coords.length > 0 && coords[0].long != null && coords[0].lat != null) {
+      map.flyTo({
+        center: [coords[0].long, coords[0].lat],
+        zoom: 14,
+        speed: 1.2,
+      });
+    }
+  } catch (err) {
+    console.error("openDrawerForMapItem:", err);
+  }
+}
+
+window.openDrawerForMapItem = openDrawerForMapItem;
+
 function closeDrawer() {
   drawer.classList.remove("open");
+  window.currentOpenMapItemId = null;
+  resetDrawerCrowding();
 }
 window.closeDrawer = closeDrawer; // Make globally accessible for inline onclick
 
@@ -53,7 +223,9 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
     zoom: zoom,
   });
 
-  //   addControls(map);
+  window.appMap = map;
+
+  addControls(map);
 
   map.once("load", async () => {
     await addParksLayer(map);
@@ -178,9 +350,9 @@ function showMap(center = [VANCOUVER_LNG, VANCOUVER_LAT], zoom = 12) {
 // ------------------------------------------------------------
 // Add zoom + rotation controls
 // ------------------------------------------------------------
-// function addControls(map) {
-//   map.addControl(new maplibregl.NavigationControl(), "top-right");
-// }
+function addControls(map) {
+  map.addControl(new maplibregl.NavigationControl(), "top-right");
+}
 
 // ------------------------------------------------------------
 // Fetch Vancouver parks GeoJSON and add polygon + outline layers
@@ -218,16 +390,40 @@ async function addParksLayer(map) {
       },
     });
 
-    // Show drawer on click
-    map.on("click", "parks-fill", (e) => {
+    // Show drawer on click (resolve map_item_id from DB so crowding / check-in work)
+    map.on("click", "parks-fill", async (e) => {
       isClicked = true;
       const props = e.features[0].properties;
-      console.log(props);
-      openDrawer(
-        props.park_name,
-        `<a href=${props.park_url} target="_blank" class="underline">Visit website<a/>`,
-        props.park_name,
-      );
+      const titleRaw =
+        props.park_name != null && String(props.park_name).trim() !== ""
+          ? String(props.park_name).trim()
+          : props.name != null && String(props.name).trim() !== ""
+            ? String(props.name).trim()
+            : "Park";
+      const parkUrl = props.park_url != null ? String(props.park_url) : "";
+      const parkLink =
+        parkUrl !== ""
+          ? `<a href="${escapeHtml(parkUrl)}" target="_blank" rel="noopener noreferrer" class="underline">Visit website</a>`
+          : "";
+
+      let mapItemId = null;
+      if (titleRaw !== "") {
+        try {
+          const r = await fetch(
+            `/api/locations/park-by-name?name=${encodeURIComponent(titleRaw)}`,
+          );
+          if (r.ok) {
+            const j = await r.json();
+            if (j.map_item_id != null) {
+              mapItemId = String(j.map_item_id);
+            }
+          }
+        } catch (lookupErr) {
+          console.warn("park map_item lookup:", lookupErr);
+        }
+      }
+
+      openDrawer(titleRaw, parkLink, mapItemId, titleRaw, "");
     });
 
     // Pointer cursor on hover
@@ -329,11 +525,12 @@ async function addCoolingCentresLayer(map) {
       openDrawer(
         props.name,
         `<ul>
-          <li>${props.address}</li>
-          <li>${props.type}</li>
-          <li>${props.hours || 'Hours unavailable'}</li>
-          <li>${props.description || ''}</li>
+          <li>${escapeHtml(String(props.address))}</li>
+          <li>${escapeHtml(String(props.type))}</li>
+          <li>${escapeHtml(props.hours != null ? String(props.hours) : "Hours unavailable")}</li>
+          <li>${escapeHtml(props.description != null ? String(props.description) : "")}</li>
         </ul>`,
+        props.map_item_id,
         props.name,
         context,
       );
