@@ -1,2 +1,203 @@
-<!DOCTYPE html>
-Temporary page for crowd data
+<%- include('./templates/header', { cssFiles: ["style.css", "auth.css"] }) %>
+<title>Crowd Report | CoolSpot</title>
+
+<style>
+  .crowd-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    background-image: url("https://www.pngkey.com/png/full/48-483820_background-png-patterns-transparent-pattern-background-png.png");
+    background-size: 300px auto;
+    background-repeat: repeat;
+    padding: 1.5rem;
+  }
+  .crowd-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 600px;
+    font-size: 1.05rem;
+  }
+  .crowd-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #4a9d6f;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+  }
+  .crowd-back:hover { text-decoration: underline; }
+  .crowd-header { margin-bottom: 1.5rem; }
+  .crowd-header p { font-size: 0.85rem; color: #999; margin: 0 0 0.25rem; }
+  .crowd-header h2 { font-size: 1.8rem; font-weight: 600; color: #1a1a1a; margin: 0; }
+  .crowd-section-label { font-size: 0.95rem; font-weight: 500; color: #333; margin-bottom: 0.75rem; }
+  .busyness-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+  .busyness-btn {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 1rem 0.25rem; border-radius: 8px; border: 1px solid #e0e0e0;
+    background: #ffffff; cursor: pointer; transition: all 0.15s; gap: 0.5rem;
+  }
+  .busyness-btn:hover { border-color: #4a9d6f; background: #f0f9f4; }
+  .busyness-btn.selected { border-color: #4a9d6f; background: #eafaf1; }
+  .busyness-btn span { font-size: 0.85rem; color: #666; text-align: center; }
+  .submit-btn {
+    width: 100%; padding: 0.8rem; margin-top: 0.5rem;
+    background-color: #4a9d6f; color: #ffffff; font-size: 1rem;
+    font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.15s;
+  }
+  .submit-btn:hover:not(:disabled) { background-color: #3d8a5f; }
+  .submit-btn:disabled { background-color: #a0c8b0; cursor: not-allowed; }
+  .average-box { display: flex; align-items: center; gap: 1rem; background: #f5f5f5; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
+  .average-box .average-label { font-size: 1.2rem; font-weight: 600; color: #1a1a1a; margin: 0 0 0.15rem; }
+  .average-box .report-count { font-size: 0.85rem; color: #999; margin: 0; }
+  .report-item { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 0.5rem; }
+  .report-item .report-left { display: flex; align-items: center; gap: 0.75rem; }
+  .report-item .report-label { font-size: 0.95rem; font-weight: 500; color: #1a1a1a; }
+  .report-item .report-time { font-size: 0.8rem; color: #999; }
+  .divider { border: none; border-top: 1px solid #e0e0e0; margin: 1.25rem 0; }
+</style>
+
+<div class="crowd-container">
+  <div class="crowd-card">
+    <a href="/" class="crowd-back">← Back to Map</a>
+    <div class="crowd-header">
+      <p>Reporting for:</p>
+      <h2 id="location-name">Loading...</h2>
+    </div>
+    <div id="login-warning" class="alert alert-error hidden">
+      You need to be logged in to submit a crowd report.
+      <a href="/login" style="color:#c0392b;font-weight:600;margin-left:4px;">Log in here</a>
+    </div>
+    <div id="success-msg" class="alert alert-success hidden">Report submitted! Thanks for helping others.</div>
+    <div id="error-msg" class="alert alert-error hidden"><span id="error-text"></span></div>
+    <p class="crowd-section-label">How busy is it right now?</p>
+    <div class="busyness-grid">
+      <button onclick="selectLevel(1)" id="btn-1" class="busyness-btn">
+        <img src="/img/people.svg" style="width:28px;height:28px;opacity:0.2" /><span>Empty</span>
+      </button>
+      <button onclick="selectLevel(2)" id="btn-2" class="busyness-btn">
+        <img src="/img/people.svg" style="width:28px;height:28px;opacity:0.4" /><span>Quiet</span>
+      </button>
+      <button onclick="selectLevel(3)" id="btn-3" class="busyness-btn">
+        <img src="/img/people.svg" style="width:28px;height:28px;opacity:0.6" /><span>Moderate</span>
+      </button>
+      <button onclick="selectLevel(4)" id="btn-4" class="busyness-btn">
+        <img src="/img/people.svg" style="width:28px;height:28px;opacity:0.8" /><span>Busy</span>
+      </button>
+      <button onclick="selectLevel(5)" id="btn-5" class="busyness-btn">
+        <img src="/img/people.svg" style="width:28px;height:28px;opacity:1" /><span>Packed</span>
+      </button>
+    </div>
+    <button id="submit-btn" onclick="submitReport()" class="submit-btn" disabled>Submit Report</button>
+    <div id="average-section" class="hidden" style="margin-top:1.5rem;">
+      <hr class="divider" />
+      <p class="crowd-section-label">Current crowd level</p>
+      <div class="average-box">
+        <img id="average-icon" src="/img/people.svg" style="width:36px;height:36px;" />
+        <div>
+          <p id="average-label" class="average-label"></p>
+          <p id="report-count" class="report-count"></p>
+        </div>
+      </div>
+    </div>
+    <div id="reports-section" class="hidden">
+      <p class="crowd-section-label">Recent reports</p>
+      <div id="reports-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const LABELS = ["", "Empty", "Quiet", "Moderate", "Busy", "Packed"];
+  const COLOURS = ["", "rgba(74, 222, 128, 0.15)", "rgba(163, 230, 53, 0.15)", "rgba(251, 191, 36, 0.15)", "rgba(249, 115, 22, 0.15)", "rgba(239, 68, 68, 0.15)"];
+  const BORDER_COLOURS = ["", "#4ade80", "#a3e635", "#fbbf24", "#f97316", "#ef4444"];
+  let selectedLevel = null;
+  const params = new URLSearchParams(window.location.search);
+  const locationId = params.get("location_id");
+  const locationName = params.get("name");
+
+  document.getElementById("location-name").textContent = locationName || "Unknown Location";
+
+  const token = localStorage.getItem("sb-token");
+  if (!token) document.getElementById("login-warning").classList.remove("hidden");
+
+  async function loadReports() {
+    if (!locationId) return;
+    try {
+      const res = await fetch(`/api/crowd/${locationId}`);
+      const data = await res.json();
+      if (data.averageBusyness) {
+        document.getElementById("average-section").classList.remove("hidden");
+        document.querySelector(".average-box").style.backgroundColor = COLOURS[data.averageBusyness];
+        document.querySelector(".average-box").style.border = `1px solid ${BORDER_COLOURS[data.averageBusyness]}`;
+        document.getElementById("average-icon").style.opacity = data.averageBusyness * 0.2;
+        document.getElementById("average-label").textContent = LABELS[data.averageBusyness];
+        document.getElementById("report-count").textContent = `Based on ${data.totalReports} report${data.totalReports !== 1 ? "s" : ""}`;
+      }
+      if (data.reports && data.reports.length > 0) {
+        document.getElementById("reports-section").classList.remove("hidden");
+        document.getElementById("reports-list").innerHTML = data.reports.map((r) => `
+          <div class="report-item">
+            <div class="report-left">
+              <img src="/img/people.svg" style="width:22px;height:22px;opacity:${r.busyness_level * 0.2}" />
+              <span class="report-label">${r.busyness_label}</span>
+            </div>
+            <span class="report-time">${new Date(r.created_at).toLocaleString()}</span>
+          </div>`).join("");
+      }
+    } catch (err) { console.error("Failed to load reports:", err); }
+  }
+
+  function selectLevel(level) {
+    selectedLevel = level;
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.getElementById(`btn-${i}`);
+      if (i === level) btn.classList.add("selected");
+      else btn.classList.remove("selected");
+    }
+    if (token) document.getElementById("submit-btn").disabled = false;
+  }
+
+  async function submitReport() {
+    if (!selectedLevel || !locationId || !token) return;
+    const submitBtn = document.getElementById("submit-btn");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+    document.getElementById("success-msg").classList.add("hidden");
+    document.getElementById("error-msg").classList.add("hidden");
+    try {
+      const res = await fetch("/api/crowd", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ location_id: parseInt(locationId), busyness_level: selectedLevel }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        document.getElementById("error-text").textContent = data.error || "Failed to submit report.";
+        document.getElementById("error-msg").classList.remove("hidden");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Report";
+        return;
+      }
+      document.getElementById("success-msg").classList.remove("hidden");
+      submitBtn.textContent = "Submitted!";
+      loadReports();
+    } catch (err) {
+      document.getElementById("error-text").textContent = "Something went wrong. Please try again.";
+      document.getElementById("error-msg").classList.remove("hidden");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Report";
+    }
+  }
+
+  loadReports();
+</script>
+
+</body>
+</html>

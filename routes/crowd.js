@@ -1,72 +1,92 @@
 const express = require("express");
 const router = express.Router();
+const supabase = require("../db/supabase");
+const requireAuth = require("../middleware/auth");
 
-// PLACEHOLDER DATA - crowd_reports table not yet created in database
-// Once the table is created, replace this with real Supabase queries
-const placeholderReports = [
-  {
-    id: 1,
-    map_item_id: "1",
-    busyness_level: 3,
-    user_id: null,
-    created_at: new Date().toISOString(),
-  },
-];
+const BUSYNESS_LABELS = ["", "Empty", "Quiet", "Moderate", "Busy", "Packed"];
 
 // GET /api/crowd/:location_id
-router.get("/:location_id", (req, res) => {
-  const { location_id } = req.params;
-  const reports = placeholderReports.filter(
-    (r) => r.map_item_id === location_id
-  );
+// Returns crowd reports and average for a specific location
+router.get("/:location_id", async (req, res) => {
+  try {
+    const { location_id } = req.params;
 
-  const averageBusyness =
-    reports.length > 0
-      ? Math.round(
-          reports.reduce((sum, r) => sum + r.busyness_level, 0) / reports.length
-        )
-      : null;
+    const { data, error } = await supabase
+      .from("crowd_reports") // public schema
+      .select("*")
+      .eq("map_item_id", location_id)
+      .order("created_at", { ascending: false })
+      .limit(10);
 
-  res.json({
-    note: "Placeholder data - crowd_reports table pending",
-    location_id,
-    averageBusyness,
-    totalReports: reports.length,
-    reports,
-  });
+    if (error) throw error;
+
+    const averageBusyness =
+      data.length > 0
+        ? Math.round(
+            data.reduce((sum, r) => sum + r.busyness_level, 0) / data.length
+          )
+        : null;
+
+    res.json({
+      location_id,
+      averageBusyness,
+      averageLabel: averageBusyness ? BUSYNESS_LABELS[averageBusyness] : null,
+      totalReports: data.length,
+      reports: data.map((r) => ({
+        ...r,
+        busyness_label: BUSYNESS_LABELS[r.busyness_level],
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching crowd reports:", error.message);
+    res.status(500).json({ error: "Failed to fetch crowd reports" });
+  }
 });
 
 // POST /api/crowd
-router.post("/", (req, res) => {
-  const { location_id, busyness_level, user_id } = req.body;
+// Submit a crowd report - login required
+// Body: { location_id, busyness_level (1-5) }
+router.post("/", requireAuth, async (req, res) => {
+  try {
+    const { location_id, busyness_level } = req.body;
 
-  if (!location_id || busyness_level === undefined) {
-    return res
-      .status(400)
-      .json({ error: "location_id and busyness_level are required" });
+    if (!location_id || busyness_level === undefined) {
+      return res
+        .status(400)
+        .json({ error: "location_id and busyness_level are required" });
+    }
+
+    if (busyness_level < 1 || busyness_level > 5) {
+      return res
+        .status(400)
+        .json({ error: "busyness_level must be between 1 and 5" });
+    }
+
+    const { data, error } = await supabase
+      .from("crowd_reports") // public schema
+      .insert([
+        {
+          map_item_id: parseInt(location_id),
+          busyness_level,
+          user_id: req.user.id, // from auth schema via middleware
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select();
+
+    if (error) throw error;
+
+    res.status(201).json({
+      message: "Crowd report submitted",
+      report: {
+        ...data[0],
+        busyness_label: BUSYNESS_LABELS[data[0].busyness_level],
+      },
+    });
+  } catch (error) {
+    console.error("Error submitting crowd report:", error.message);
+    res.status(500).json({ error: "Failed to submit crowd report" });
   }
-
-  if (busyness_level < 1 || busyness_level > 5) {
-    return res
-      .status(400)
-      .json({ error: "busyness_level must be between 1 and 5" });
-  }
-
-  const newReport = {
-    id: placeholderReports.length + 1,
-    map_item_id: location_id,
-    busyness_level,
-    user_id: user_id || null,
-    created_at: new Date().toISOString(),
-  };
-
-  placeholderReports.push(newReport);
-
-  res.status(201).json({
-    note: "Placeholder data - crowd_reports table pending",
-    message: "Crowd report submitted",
-    report: newReport,
-  });
 });
 
 module.exports = router;

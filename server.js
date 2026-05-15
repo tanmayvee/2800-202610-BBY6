@@ -57,7 +57,7 @@ app.get("/signup", (req, res) => {
 });
 
 app.get("/crowds", (req, res) => {
-  res.render("crowds");
+  res.render("crowds", { cssFiles: ["style.css", "auth.css"] });
 });
 
 app.get("/locations", (req, res) => {

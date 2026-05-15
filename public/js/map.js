@@ -252,7 +252,7 @@ async function addCoolingCentresLayer(map) {
         type: "Feature",
         geometry: {
           type: "Point",
-          coordinates: [r.coords[0].long, r.coords[0].lat],
+          coordinates: [parseFloat(r.coords[0].long), parseFloat(r.coords[0].lat)],
         },
         properties: {
           map_item_id: r.centre.map_item_id,
@@ -319,7 +319,11 @@ async function addCoolingCentresLayer(map) {
           <li>${props.type}</li>
           <li>${props.hours || 'Hours unavailable'}</li>
           <li>${props.description || ''}</li>
-        </ul>`,
+        </ul>
+        <a href="/crowds?location_id=${props.map_item_id}&name=${encodeURIComponent(props.name)}"
+    class="inline-block bg-blue-600 text-white py-1 px-3 rounded-lg text-xs font-semibold mt-2">
+    Report Crowd Level
+  </a>`,
       );
     });
 
